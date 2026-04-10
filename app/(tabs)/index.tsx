@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, FlatList } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, FlatList, RefreshControl, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/store/authStore';
@@ -15,6 +15,15 @@ export default function HomeScreen() {
   const { user } = useAuthStore();
   const { plants, fetchPlants } = usePlantStore();
   const [totalCheckIns, setTotalCheckIns] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    if (!user) return;
+    setRefreshing(true);
+    await fetchPlants(user.id);
+    await fetchCheckInCount(user.id);
+    setRefreshing(false);
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -62,6 +71,15 @@ export default function HomeScreen() {
       <ScrollView
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#22C55E"
+            colors={['#22C55E']}
+            progressBackgroundColor="#1A1A2E"
+          />
+        }
       >
         {/* Header */}
         <View style={{ paddingHorizontal: 16, paddingVertical: 24 }}>
@@ -127,7 +145,14 @@ export default function HomeScreen() {
               if (activePlants.length > 0) {
                 router.push(`/checkin/${activePlants[0].id}`);
               } else {
-                // Show alert to create a plant first
+                Alert.alert(
+                  'Sin plantas activas',
+                  'Primero crea una planta para poder hacer un check-in.',
+                  [
+                    { text: 'Cancelar', style: 'cancel' },
+                    { text: 'Crear planta', onPress: () => router.push('/plant/new') },
+                  ]
+                );
               }
             }}
             size="large"

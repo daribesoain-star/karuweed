@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, Linking, Platform, Alert, ScrollView, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, Linking, Platform, ScrollView, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useStoreStore } from '@/store/storeStore';
 import { Store } from '@/lib/types';
@@ -20,8 +19,17 @@ const tierLabels: Record<string, string> = {
   premium: 'Premium',
 };
 
+// Only import MapView on native platforms
+let MapView: any = null;
+let Marker: any = null;
+if (Platform.OS !== 'web') {
+  const Maps = require('react-native-maps');
+  MapView = Maps.default;
+  Marker = Maps.Marker;
+}
+
 export default function MapScreen() {
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<any>(null);
   const { stores, selectedStore, isLoading, fetchNearbyStores, fetchStores, selectStore } = useStoreStore();
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
@@ -36,7 +44,6 @@ export default function MapScreen() {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         setLocationError('Permiso de ubicación denegado');
-        // Fallback: load all stores without location filter
         await fetchStores();
         return;
       }
@@ -61,6 +68,7 @@ export default function MapScreen() {
     const url = Platform.select({
       ios: `maps:?daddr=${store.latitude},${store.longitude}`,
       android: `google.navigation:q=${store.latitude},${store.longitude}`,
+      web: `https://www.google.com/maps/dir/?api=1&destination=${store.latitude},${store.longitude}`,
     });
     if (url) Linking.openURL(url);
   };
@@ -73,7 +81,98 @@ export default function MapScreen() {
 
   const initialRegion = userLocation
     ? { ...userLocation, latitudeDelta: 0.1, longitudeDelta: 0.1 }
-    : { latitude: -33.4489, longitude: -70.6693, latitudeDelta: 0.5, longitudeDelta: 0.5 }; // Santiago default
+    : { latitude: -33.4489, longitude: -70.6693, latitudeDelta: 0.5, longitudeDelta: 0.5 };
+
+  // Web fallback: show store list instead of map
+  const renderWebFallback = () => (
+    <ScrollView style={{ flex: 1, backgroundColor: '#0A0A0A' }}>
+      {stores.length === 0 && !isLoading ? (
+        <View style={{ padding: 32, alignItems: 'center' }}>
+          <Text style={{ fontSize: 48, marginBottom: 16 }}>🗺️</Text>
+          <Text style={{ color: '#A0A0A0', fontSize: 14, textAlign: 'center' }}>
+            No se encontraron tiendas cercanas
+          </Text>
+        </View>
+      ) : (
+        stores.map((store) => (
+          <TouchableOpacity
+            key={store.id}
+            onPress={() => selectStore(selectedStore?.id === store.id ? null : store)}
+            style={{
+              backgroundColor: selectedStore?.id === store.id ? '#0B3D2E' : '#1A1A2E',
+              borderRadius: 12,
+              padding: 16,
+              marginHorizontal: 16,
+              marginBottom: 8,
+              borderWidth: 1,
+              borderColor: selectedStore?.id === store.id ? '#22C55E40' : '#3A3A4E',
+            }}
+          >
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <View style={{ flex: 1, marginRight: 12 }}>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#FFFFFF', marginBottom: 4 }}>
+                  {store.name}
+                </Text>
+                <Text style={{ fontSize: 13, color: '#A0A0A0' }}>
+                  {store.address}, {store.city}
+                </Text>
+              </View>
+              <View style={{
+                backgroundColor: tierColors[store.tier] + '20',
+                borderRadius: 8,
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+              }}>
+                <Text style={{ color: tierColors[store.tier], fontWeight: '600', fontSize: 11 }}>
+                  {store.is_verified ? '✓ ' : ''}{tierLabels[store.tier]}
+                </Text>
+              </View>
+            </View>
+            {selectedStore?.id === store.id && (
+              <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
+                <TouchableOpacity
+                  onPress={() => openDirections(store)}
+                  style={{
+                    flex: 1,
+                    backgroundColor: '#22C55E',
+                    borderRadius: 10,
+                    paddingVertical: 10,
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    gap: 6,
+                  }}
+                >
+                  <Text style={{ fontSize: 14 }}>🧭</Text>
+                  <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 14 }}>Ir</Text>
+                </TouchableOpacity>
+                {store.contact?.phone && (
+                  <TouchableOpacity
+                    onPress={() => openContact('phone', store.contact!.phone!)}
+                    style={{
+                      flex: 1,
+                      backgroundColor: '#1A1A2E',
+                      borderRadius: 10,
+                      paddingVertical: 10,
+                      alignItems: 'center',
+                      borderWidth: 1,
+                      borderColor: '#3A3A4E',
+                      flexDirection: 'row',
+                      justifyContent: 'center',
+                      gap: 6,
+                    }}
+                  >
+                    <Text style={{ fontSize: 14 }}>📞</Text>
+                    <Text style={{ color: '#FFFFFF', fontWeight: '600', fontSize: 14 }}>Llamar</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </TouchableOpacity>
+        ))
+      )}
+    </ScrollView>
+  );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#0A0A0A' }} edges={['top']}>
@@ -93,13 +192,15 @@ export default function MapScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Map */}
+      {/* Map or Web Fallback */}
       <View style={{ flex: 1 }}>
-        {isLoading && !mapReady ? (
+        {isLoading ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0A0A0A' }}>
             <ActivityIndicator size="large" color="#22C55E" />
             <Text style={{ color: '#A0A0A0', marginTop: 12 }}>Cargando tiendas...</Text>
           </View>
+        ) : Platform.OS === 'web' || !MapView ? (
+          renderWebFallback()
         ) : (
           <MapView
             ref={mapRef}
@@ -149,8 +250,8 @@ export default function MapScreen() {
         )}
       </View>
 
-      {/* Store Detail Card */}
-      {selectedStore && (
+      {/* Store Detail Card (native only, when map marker selected) */}
+      {Platform.OS !== 'web' && selectedStore && (
         <View style={{
           backgroundColor: '#1A1A2E',
           borderTopLeftRadius: 20,
@@ -159,7 +260,6 @@ export default function MapScreen() {
           borderTopWidth: 1,
           borderColor: '#3A3A4E',
         }}>
-          {/* Drag handle */}
           <View style={{ width: 40, height: 4, backgroundColor: '#3A3A4E', borderRadius: 2, alignSelf: 'center', marginBottom: 16 }} />
 
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
@@ -183,7 +283,6 @@ export default function MapScreen() {
             </View>
           </View>
 
-          {/* Action Buttons */}
           <View style={{ flexDirection: 'row', gap: 10 }}>
             <TouchableOpacity
               onPress={() => openDirections(selectedStore)}

@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, FlatList } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, FlatList, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/store/authStore';
@@ -11,6 +11,14 @@ export default function PlantsScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
   const { plants, fetchPlants, isLoading } = usePlantStore();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    if (!user) return;
+    setRefreshing(true);
+    await fetchPlants(user.id);
+    setRefreshing(false);
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -26,6 +34,15 @@ export default function PlantsScreen() {
       <ScrollView
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#22C55E"
+            colors={['#22C55E']}
+            progressBackgroundColor="#1A1A2E"
+          />
+        }
       >
         {/* Header */}
         <View

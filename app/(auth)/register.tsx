@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, Modal, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '@/store/authStore';
@@ -14,7 +14,28 @@ export default function RegisterScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [countryCode, setCountryCode] = useState('CL');
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [localError, setLocalError] = useState('');
+
+  const countries = [
+    { code: 'CL', name: 'Chile', flag: '🇨🇱' },
+    { code: 'AR', name: 'Argentina', flag: '🇦🇷' },
+    { code: 'MX', name: 'México', flag: '🇲🇽' },
+    { code: 'CO', name: 'Colombia', flag: '🇨🇴' },
+    { code: 'PE', name: 'Perú', flag: '🇵🇪' },
+    { code: 'UY', name: 'Uruguay', flag: '🇺🇾' },
+    { code: 'ES', name: 'España', flag: '🇪🇸' },
+    { code: 'US', name: 'Estados Unidos', flag: '🇺🇸' },
+    { code: 'BR', name: 'Brasil', flag: '🇧🇷' },
+    { code: 'EC', name: 'Ecuador', flag: '🇪🇨' },
+    { code: 'BO', name: 'Bolivia', flag: '🇧🇴' },
+    { code: 'PY', name: 'Paraguay', flag: '🇵🇾' },
+    { code: 'VE', name: 'Venezuela', flag: '🇻🇪' },
+    { code: 'CR', name: 'Costa Rica', flag: '🇨🇷' },
+    { code: 'CA', name: 'Canadá', flag: '🇨🇦' },
+  ];
+
+  const selectedCountry = countries.find(c => c.code === countryCode) || countries[0];
 
   const handleRegister = async () => {
     setLocalError('');
@@ -123,8 +144,34 @@ export default function RegisterScreen() {
             onChangeText={setConfirmPassword}
             editable={!isLoading}
             secureTextEntry
-            containerStyle={{ marginBottom: 12 }}
+            containerStyle={{ marginBottom: 16 }}
           />
+
+          {/* Country Selector */}
+          <View>
+            <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '600', marginBottom: 8 }}>
+              País
+            </Text>
+            <TouchableOpacity
+              onPress={() => setShowCountryPicker(true)}
+              style={{
+                backgroundColor: '#1A1A2E',
+                borderWidth: 1,
+                borderColor: '#3A3A4E',
+                borderRadius: 8,
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ color: '#FFFFFF', fontSize: 16 }}>
+                {selectedCountry.flag}  {selectedCountry.name}
+              </Text>
+              <Text style={{ color: '#A0A0A0', fontSize: 14 }}>▼</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <Button
@@ -142,6 +189,56 @@ export default function RegisterScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Country Picker Modal */}
+      <Modal visible={showCountryPicker} transparent animationType="slide">
+        <View style={{ flex: 1, backgroundColor: '#00000080', justifyContent: 'flex-end' }}>
+          <View style={{
+            backgroundColor: '#1A1A2E',
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            maxHeight: '60%',
+            paddingTop: 16,
+          }}>
+            <View style={{ paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: '#3A3A4E' }}>
+              <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '700' }}>Selecciona tu país</Text>
+            </View>
+            <FlatList
+              data={countries}
+              keyExtractor={(item) => item.code}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  onPress={() => {
+                    setCountryCode(item.code);
+                    setShowCountryPicker(false);
+                  }}
+                  style={{
+                    paddingHorizontal: 16,
+                    paddingVertical: 14,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: countryCode === item.code ? '#0B3D2E' : 'transparent',
+                    borderBottomWidth: 1,
+                    borderBottomColor: '#3A3A4E20',
+                  }}
+                >
+                  <Text style={{ fontSize: 24, marginRight: 12 }}>{item.flag}</Text>
+                  <Text style={{ color: '#FFFFFF', fontSize: 16, flex: 1 }}>{item.name}</Text>
+                  {countryCode === item.code && (
+                    <Text style={{ color: '#22C55E', fontWeight: '600' }}>✓</Text>
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+            <TouchableOpacity
+              onPress={() => setShowCountryPicker(false)}
+              style={{ padding: 16, alignItems: 'center', borderTopWidth: 1, borderTopColor: '#3A3A4E' }}
+            >
+              <Text style={{ color: '#A0A0A0', fontSize: 16, fontWeight: '600' }}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
