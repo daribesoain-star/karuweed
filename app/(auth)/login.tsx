@@ -3,8 +3,8 @@ import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '@/store/authStore';
-import { Button } from 'A/components/Button';
-import { Input } from 'A/components/Input';
+import { Button } from '@/components/Button';
+import { Input } from '@/components/Input';
 
 export default function LoginScreen() {
   const router = useRouter();

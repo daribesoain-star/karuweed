@@ -1,0 +1,50 @@
+{
+  "name": "karuweed",
+  "version": "1.0.0",
+  "description": "Cannabis cultivation companion app with AI",
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.3.0",
+    "@react-native-community/datetimepicker": "^8.0.0",
+    "@react-navigation/bottom-tabs": "^7.0.0",
+    "@react-navigation/native": "^7.0.0",
+    "@supabase/supabase-js": "^2.41.0",
+    "date-fns": "^3.3.0",
+    "expo": "~54.0.0",
+    "expo-av": "~16.0.8",
+    "expo-camera": "~17.0.10",
+    "expo-constants": "~18.0.13",
+    "expo-image-picker": "~17.0.10",
+    "expo-linking": "~8.0.11",
+    "expo-localization": "~17.0.8",
+    "expo-location": "~19.0.8",
+    "expo-router": "~6.0.23",
+    "expo-secure-store": "~15.0.8",
+    "expo-status-bar": "~3.0.9",
+    "react": "19.1.0",
+    "react-hook-form": "^7.51.0",
+    "react-native": "0.81.5",
+    "react-native-gesture-handler": "~2.28.0",
+    "react-native-maps": "1.20.1",
+    "react-native-reanimated": "~4.1.1",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-screens": "~4.16.0",
+    "react-native-svg": "15.12.1",
+    "react-native-worklets": "0.8.0",
+    "zod": "^3.23.0",
+    "zustand": "^4.5.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.0",
+    "@types/react": "~19.0.10",
+    "typescript": "~5.8.3"
+  },
+  "private": true
+}
+  
