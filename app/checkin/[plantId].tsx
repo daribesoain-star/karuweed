@@ -128,12 +128,13 @@ export default function CheckInScreen() {
         setAnalysisStep('complete');
       }
     } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Error desconocido';
       Alert.alert(
         'Análisis IA no disponible',
-        'No se pudo conectar con la IA. Puedes guardar el check-in sin análisis.',
+        `${msg}\n\nPuedes guardar el check-in sin análisis.`,
       );
       setAnalysisStep('complete');
-      console.error(error);
+      console.error('AI analysis error:', error);
     } finally {
       setIsAnalyzing(false);
     }
