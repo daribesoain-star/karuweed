@@ -1,1 +1,117 @@
-aW1wb3J0IFJlYWN0LCB7IHVzZVN0YXRlIH0gZnJvbSAncmVhY3QnOwppbXBvcnQgeyBWaWV3LCBUZXh0LCBTY3JvbGxWaWV3LCBUb3VjaGFibGVPcGFjaXR5IH0gZnJvbSAncmVhY3QtbmF0aXZlJzsKaW1wb3J0IHsgdXNlUm91dGVyIH0gZnJvbSAnZXhwby1yb3V0ZXInOwppbXBvcnQgeyBTYWZlQXJlYVZpZXcgfSBmcm9tICdyZWFjdC1uYXRpdmUtc2FmZS1hcmVhLWNvbnRleHQnOwppbXBvcnQgeyB1c2VBdXRoU3RvcmUgfSBmcm9tICdAL3N0b3JlL2F1dGhTdG9yZSc7CmltcG9ydCB7IEJ1dHRvbiB9IGZyb20gJ0EvY29tcG9uZW50cy9CdXR0b24nOwppbXBvcnQgeyBJbnB1dCB9IGZyb20gJ0EvY29tcG9uZW50cy9JbnB1dCc7CgpleHBvcnQgZGVmYXVsdCBmdW5jdGlvbiBMb2dpblNjcmVlbigpIHsKICBjb25zdCByb3V0ZXIgPSB1c2VSb3V0ZXIoKTsKICBjb25zdCB7IHNpZ25JbiwgaXNMb2FkaW5nLCBlcnJvciwgY2xlYXJFcnJvciB9ID0gdXNlQXV0aFN0b3JlKCk7CiAgY29uc3QgW2VtYWlsLCBzZXRFbWFpbF0gPSB1c2VTdGF0ZSgnJyk7CiAgY29uc3QgW3Bhc3N3b3JkLCBzZXRQYXNzd29yZF0gPSB1c2VTdGF0ZSgnJyk7CiAgY29uc3QgW2xvY2FsRXJyb3IsIHNldExvY2FsRXJyb3JdID0gdXNlU3RhdGUoJycpOwoKICBjb25zdCBoYW5kbGVMb2dpbiA9IGFzeW5jICgpID0+IHsKICAgIHNldExvY2FsRXJyb3IoJycpOwogICAgY2xlYXJFcnJvcigpOwoKICAgIGlmICghZW1haWwgfHwgIXBhc3N3b3JkKSB7CiAgICAgIHNldExvY2FsRXJyb3IoJ1BvciBmYXZvciBjb21wbGV0YSB0b2RvcyBsb3MgY2FtcG9zJyk7CiAgICAgIHJldHVybjsKICAgIH0KCiAgICB0cnkgewogICAgICBhd2FpdCBzaWduSW4oZW1haWwsIHBhc3N3b3JkKTsKICAgICAgcm91dGVyLnJlcGxhY2UoJy8odGFicyknKTsKICAgIH0gY2F0Y2ggKGVycikgewogICAgICAvLyBFcnJvciBpcyBhbHJlYWR5IHNldCBpbiB0aGUgc3RvcmUgd2l0aCBTcGFuaXNoIHRyYW5zbGF0aW9uCiAgICB9CiAgfTsKCiAgcmV0dXJuICgK
+import React, { useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuthStore } from '@/store/authStore';
+import { Button } from 'A/components/Button';
+import { Input } from 'A/components/Input';
+
+export default function LoginScreen() {
+  const router = useRouter();
+  const { signIn, isLoading, error, clearError } = useAuthStore();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [localError, setLocalError] = useState('');
+
+  const handleLogin = async () => {
+    setLocalError('');
+    clearError();
+
+    if (!email || !password) {
+      setLocalError('Por favor completa todos los campos');
+      return;
+    }
+
+    try {
+      await signIn(email, password);
+      router.replace('/(tabs)');
+    } catch (err) {
+      // Error is already set in the store with Spanish translation
+    }
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#0A0A0A' }}>
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Logo area */}
+        <View style={{ marginBottom: 32 }}>
+          <Text style={{ fontSize: 40, marginBottom: 8 }}>🌿</Text>
+          <Text style={{ fontSize: 32, fontWeight: '700', color: '#FFFFFF', marginBottom: 8 }}>
+            KaruWeed
+          </Text>
+          <Text style={{ fontSize: 16, color: '#A0A0A0' }}>
+            Tu compañero de cultivo de cannabis
+          </Text>
+        </View>
+
+        {/* Error display */}
+        {(localError || error) && (
+          <View style={{
+            backgroundColor: '#EF4444' + '20',
+            borderWidth: 1,
+            borderColor: '#EF4444',
+            borderRadius: 8,
+            padding: 12,
+            marginBottom: 20,
+          }}>
+            <Text style={{ color: '#FCA5A5', fontSize: 14 }}>
+              {localError || error}
+            </Text>
+          </View>
+        )}
+
+        {/* Form */}
+        <View style={{ marginBottom: 16 }}>
+          <Input
+            label="Correo electrónico"
+            placeholder="tu@email.com"
+            value={email}
+            onChangeText={setEmail}
+            editable={!isLoading}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            containerStyle={{ marginBottom: 16 }}
+          />
+          <Input
+            label="Contraseña"
+            placeholder="Tu contraseña"
+            value={password}
+            onChangeText={setPassword}
+            editable={!isLoading}
+            secureTextEntry
+            containerStyle={{ marginBottom: 8 }}
+          />
+        </View>
+
+        {/* Forgot password link */}
+        <TouchableOpacity
+          onPress={() => { clearError(); router.push('/(auth)/forgot-password'); }}
+          style={{ alignSelf: 'flex-end', marginBottom: 24, padding: 4 }}
+        >
+          <Text style={{ color: '#22C55E', fontSize: 13, fontWeight: '500' }}>
+            ¿Olvidaste tu contraseña?
+          </Text>
+        </TouchableOpacity>
+
+        <Button
+          title={isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+          onPress={handleLogin}
+          disabled={isLoading}
+          loading={isLoading}
+          size="large"
+        />
+
+        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 24 }}>
+          <Text style={{ color: '#A0A0A0', fontSize: 14 }}>¿No tienes cuenta? </Text>
+          <TouchableOpacity onPress={() => { clearError(); router.push('/(auth)/register'); }}>
+            <Text style={{ color: '#22C55E', fontSize: 14, fontWeight: '600' }}>Regístrate aquí</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
