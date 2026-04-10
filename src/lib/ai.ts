@@ -4,17 +4,17 @@ import { supabase } from './supabase';
 const SUPABASE_URL = 'https://ymvnflwcxwgsyhramhex.supabase.co';
 
 export async function analyzePlantImage(
-  base64Image: string,
+  base64Images: string | string[],
   strain?: string,
   stage?: string,
   dayOfCycle?: number,
 ): Promise<AIAnalysis> {
   try {
-    // Get the current session token for auth
     const { data: { session } } = await supabase.auth.getSession();
     const token = session?.access_token || '';
 
-    // Call Supabase Edge Function (keeps API key server-side, no CORS issues)
+    const images = Array.isArray(base64Images) ? base64Images : [base64Images];
+
     const response = await fetch(`${SUPABASE_URL}/functions/v1/analyze-plant`, {
       method: 'POST',
       headers: {
@@ -22,7 +22,7 @@ export async function analyzePlantImage(
         'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({
-        image: base64Image,
+        images,
         strain: strain || 'desconocida',
         stage: stage || 'desconocida',
         day_of_cycle: dayOfCycle || 0,
@@ -37,7 +37,6 @@ export async function analyzePlantImage(
 
     const data = await response.json();
 
-    // Validate response structure
     if (
       typeof data.diagnosis !== 'string' ||
       typeof data.health_score !== 'number' ||

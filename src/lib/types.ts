@@ -27,11 +27,18 @@ export interface Plant {
   created_at: string;
 }
 
+export interface PhotoRequest {
+  type: string;
+  description: string;
+}
+
 export interface AIAnalysis {
   diagnosis: string;
   health_score: number;
   recommendations: string[];
   identified_issues: string[];
+  needs_more_photos?: boolean;
+  photo_requests?: PhotoRequest[];
 }
 
 export interface CheckIn {

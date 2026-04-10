@@ -16,109 +16,140 @@ import { supabase } from '@/lib/supabase';
 import { analyzePlantImage } from '@/lib/ai';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
+import { AIAnalysis, PhotoRequest } from '@/lib/types';
+
+interface PhotoEntry {
+  uri: string;
+  base64: string;
+  label?: string;
+}
 
 export default function CheckInScreen() {
   const { plantId } = useLocalSearchParams();
   const router = useRouter();
   const { getPlantById } = usePlantStore();
-  const [photo, setPhoto] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<PhotoEntry[]>([]);
   const [heightCm, setHeightCm] = useState('');
   const [notes, setNotes] = useState('');
-  const [selectedIssues, setSelectedIssues] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysis, setAnalysis] = useState<any>(null);
+  const [analysis, setAnalysis] = useState<AIAnalysis | null>(null);
+  const [photoRequests, setPhotoRequests] = useState<PhotoRequest[]>([]);
+  const [analysisStep, setAnalysisStep] = useState<'initial' | 'requesting' | 'complete'>('initial');
 
   const plant = getPlantById(plantId as string);
 
-  const commonIssues = [
-    'Deficiencia de Nitrógeno',
-    'Deficiencia de Potasio',
-    'Plagas',
-    'Mildiu',
-    'Quemadura de luz',
-    'Estrés hídrico',
-    'Pudrición de raíces',
-  ];
-
-  const handleTakePhoto = async () => {
+  const takeOrPickPhoto = async (source: 'camera' | 'gallery', label?: string) => {
     try {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permiso denegado', 'Se necesita acceso a la cámara');
-        return;
+      if (source === 'camera') {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permiso denegado', 'Se necesita acceso a la cámara');
+          return;
+        }
+      } else {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permiso denegado', 'Se necesita acceso a la galería');
+          return;
+        }
       }
 
-      const result = await ImagePicker.launchCameraAsync({
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8,
-        base64: true,
-      });
+      const result = source === 'camera'
+        ? await ImagePicker.launchCameraAsync({
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.8,
+            base64: true,
+          })
+        : await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.8,
+            base64: true,
+          });
 
       if (!result.canceled && result.assets[0].base64) {
-        setPhoto(result.assets[0].uri);
-        // Analyze immediately
-        await analyzePhoto(result.assets[0].base64);
+        const newPhoto: PhotoEntry = {
+          uri: result.assets[0].uri,
+          base64: result.assets[0].base64,
+          label,
+        };
+        const updatedPhotos = [...photos, newPhoto];
+        setPhotos(updatedPhotos);
+        return newPhoto;
       }
     } catch (error) {
-      Alert.alert('Error', 'No se pudo tomar la foto');
+      Alert.alert('Error', 'No se pudo obtener la foto');
+    }
+    return null;
+  };
+
+  const handleFirstPhoto = async (source: 'camera' | 'gallery') => {
+    const photo = await takeOrPickPhoto(source, 'Foto principal');
+    if (photo) {
+      await runAnalysis([photo]);
     }
   };
 
-  const handlePickPhoto = async () => {
-    try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permiso denegado', 'Se necesita acceso a la galería');
-        return;
-      }
+  const handleAdditionalPhoto = async (request: PhotoRequest) => {
+    const photo = await takeOrPickPhoto('camera', request.description);
+    if (photo) {
+      // Remove this request from pending
+      const remaining = photoRequests.filter(r => r.type !== request.type);
+      setPhotoRequests(remaining);
 
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8,
-        base64: true,
-      });
-
-      if (!result.canceled && result.assets[0].base64) {
-        setPhoto(result.assets[0].uri);
-        // Analyze immediately
-        await analyzePhoto(result.assets[0].base64);
+      const allPhotos = [...photos];
+      // If no more requests or user has added enough, run full analysis
+      if (remaining.length === 0) {
+        await runAnalysis(allPhotos);
       }
-    } catch (error) {
-      Alert.alert('Error', 'No se pudo seleccionar la foto');
     }
   };
 
-  const analyzePhoto = async (base64: string) => {
+  const runAnalysis = async (photoEntries: PhotoEntry[]) => {
     setIsAnalyzing(true);
+    setAnalysisStep(photoEntries.length === 1 ? 'initial' : 'complete');
     try {
+      const base64Images = photoEntries.map(p => p.base64);
       const result = await analyzePlantImage(
-        base64,
+        base64Images,
         plant?.strain,
         plant?.stage,
       );
       setAnalysis(result);
-      // Auto-select identified issues
-      if (result.identified_issues && result.identified_issues.length > 0) {
-        setSelectedIssues(result.identified_issues);
+
+      if (result.needs_more_photos && result.photo_requests && result.photo_requests.length > 0 && photoEntries.length === 1) {
+        setPhotoRequests(result.photo_requests);
+        setAnalysisStep('requesting');
+      } else {
+        setPhotoRequests([]);
+        setAnalysisStep('complete');
       }
     } catch (error) {
-      // IA analysis is optional — don't block the user
       Alert.alert(
         'Análisis IA no disponible',
         'No se pudo conectar con la IA. Puedes guardar el check-in sin análisis.',
       );
+      setAnalysisStep('complete');
       console.error(error);
     } finally {
       setIsAnalyzing(false);
     }
   };
 
+  const handleSkipAdditionalPhotos = async () => {
+    setPhotoRequests([]);
+    setAnalysisStep('complete');
+    // Re-run with all photos we have for a final analysis
+    if (photos.length > 1) {
+      await runAnalysis(photos);
+    }
+  };
+
   const handleSubmit = async () => {
-    if (!photo) {
+    if (photos.length === 0) {
       Alert.alert('Error', 'Por favor toma o selecciona una foto');
       return;
     }
@@ -127,17 +158,15 @@ export default function CheckInScreen() {
       Alert.alert('Error', 'Por favor indica la altura de la planta');
       return;
     }
-    // AI analysis is optional — user can save without it
 
     setIsLoading(true);
 
     try {
-      // Upload image to Supabase storage
+      // Upload first photo to Supabase storage
       const timestamp = Date.now();
       const filename = `${plantId}_${timestamp}.jpg`;
 
-      // Convert URI to ArrayBuffer (required for Supabase Storage on Android)
-      const response = await fetch(photo);
+      const response = await fetch(photos[0].uri);
       const blob = await response.blob();
       const arrayBuffer = await new Response(blob).arrayBuffer();
 
@@ -150,12 +179,13 @@ export default function CheckInScreen() {
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const {
         data: { publicUrl },
       } = supabase.storage.from('plant-photos').getPublicUrl(filename);
 
-      // Create check-in record (ai_analysis may be null if IA failed)
+      // Use issues from AI analysis
+      const issues = analysis?.identified_issues || [];
+
       const { error: insertError } = await supabase.from('checkins').insert({
         plant_id: plantId,
         date: new Date().toISOString(),
@@ -163,7 +193,7 @@ export default function CheckInScreen() {
         ai_analysis: analysis || null,
         height_cm: parseFloat(heightCm),
         notes: notes || null,
-        issues: selectedIssues,
+        issues,
       });
 
       if (insertError) throw insertError;
@@ -218,74 +248,144 @@ export default function CheckInScreen() {
           {/* Photo Section */}
           <View style={{ marginBottom: 24 }}>
             <Text style={{ fontSize: 16, fontWeight: '600', color: '#FFFFFF', marginBottom: 12 }}>
-              Foto de la planta
+              {photos.length === 0 ? 'Foto de la planta' : `Fotos (${photos.length})`}
             </Text>
 
-            {photo ? (
-              <View style={{ marginBottom: 12 }}>
-                <Image
-                  source={{ uri: photo }}
-                  style={{
-                    width: '100%',
-                    height: 250,
-                    borderRadius: 12,
-                    marginBottom: 12,
-                    backgroundColor: '#1A1A2E',
-                  }}
-                />
-                <Button
-                  title="Cambiar foto"
-                  onPress={handleTakePhoto}
-                  variant="secondary"
-                  size="medium"
-                />
-              </View>
-            ) : (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  gap: 8,
-                  marginBottom: 12,
-                }}
-              >
+            {/* Photo thumbnails */}
+            {photos.length > 0 && (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+                {photos.map((photo, index) => (
+                  <View key={index} style={{ marginRight: 8 }}>
+                    <Image
+                      source={{ uri: photo.uri }}
+                      style={{
+                        width: photos.length === 1 ? 300 : 150,
+                        height: photos.length === 1 ? 225 : 112,
+                        borderRadius: 12,
+                        backgroundColor: '#1A1A2E',
+                      }}
+                    />
+                    {photo.label && (
+                      <Text style={{ color: '#A0A0A0', fontSize: 11, marginTop: 4, maxWidth: 150 }} numberOfLines={1}>
+                        {photo.label}
+                      </Text>
+                    )}
+                  </View>
+                ))}
+              </ScrollView>
+            )}
+
+            {/* Initial photo buttons */}
+            {photos.length === 0 && (
+              <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
                 <View style={{ flex: 1 }}>
-                  <Button
-                    title="Tomar foto"
-                    onPress={handleTakePhoto}
-                    size="medium"
-                  />
+                  <Button title="Tomar foto" onPress={() => handleFirstPhoto('camera')} size="medium" />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Button
-                    title="Galería"
-                    onPress={handlePickPhoto}
-                    variant="secondary"
-                    size="medium"
-                  />
+                  <Button title="Galería" onPress={() => handleFirstPhoto('gallery')} variant="secondary" size="medium" />
                 </View>
               </View>
             )}
 
+            {/* Analyzing indicator */}
             {isAnalyzing && (
               <View
                 style={{
                   backgroundColor: '#0B3D2E',
-                  borderRadius: 8,
-                  padding: 16,
+                  borderRadius: 12,
+                  padding: 20,
                   alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: '#22C55E40',
                 }}
               >
                 <ActivityIndicator size="small" color="#22C55E" style={{ marginBottom: 8 }} />
-                <Text style={{ color: '#22C55E' }}>Analizando planta...</Text>
+                <Text style={{ color: '#22C55E', fontWeight: '600', marginBottom: 4 }}>
+                  {photos.length === 1 ? 'Analizando planta...' : 'Analizando todas las fotos...'}
+                </Text>
+                <Text style={{ color: '#A0A0A0', fontSize: 12, textAlign: 'center' }}>
+                  La IA está revisando {photos.length === 1 ? 'la imagen' : `las ${photos.length} imágenes`}
+                </Text>
               </View>
             )}
           </View>
 
+          {/* AI Photo Requests - The magic part */}
+          {analysisStep === 'requesting' && photoRequests.length > 0 && !isAnalyzing && (
+            <View style={{ marginBottom: 24 }}>
+              <View style={{
+                backgroundColor: '#1A1A2E',
+                borderRadius: 12,
+                padding: 16,
+                borderWidth: 1,
+                borderColor: '#C47A2C60',
+                marginBottom: 12,
+              }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                  <Text style={{ fontSize: 20, marginRight: 8 }}>🔍</Text>
+                  <Text style={{ color: '#C47A2C', fontWeight: '700', fontSize: 16 }}>
+                    La IA necesita más fotos
+                  </Text>
+                </View>
+                <Text style={{ color: '#A0A0A0', fontSize: 13, lineHeight: 20, marginBottom: 16 }}>
+                  Para darte un diagnóstico más preciso, necesito ver otros ángulos de tu planta:
+                </Text>
+
+                {photoRequests.map((request, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => handleAdditionalPhoto(request)}
+                    style={{
+                      backgroundColor: '#0A0A0A',
+                      borderRadius: 10,
+                      padding: 14,
+                      marginBottom: 8,
+                      borderWidth: 1,
+                      borderColor: '#3A3A4E',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <View style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 22,
+                      backgroundColor: '#22C55E15',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      marginRight: 12,
+                    }}>
+                      <Text style={{ fontSize: 22 }}>📸</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: '#FFFFFF', fontWeight: '600', fontSize: 14, marginBottom: 2 }}>
+                        {request.type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                      </Text>
+                      <Text style={{ color: '#A0A0A0', fontSize: 12, lineHeight: 18 }}>
+                        {request.description}
+                      </Text>
+                    </View>
+                    <Text style={{ color: '#22C55E', fontSize: 22, marginLeft: 8 }}>+</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <TouchableOpacity
+                onPress={handleSkipAdditionalPhotos}
+                style={{ alignItems: 'center', padding: 8 }}
+              >
+                <Text style={{ color: '#A0A0A0', fontSize: 13 }}>
+                  Omitir y usar análisis actual →
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           {/* AI Analysis Results */}
-          {analysis && !isAnalyzing && (
+          {analysis && !isAnalyzing && analysisStep !== 'initial' && (
             <View style={{ marginBottom: 24 }}>
               <Text style={{ fontSize: 16, fontWeight: '600', color: '#FFFFFF', marginBottom: 12 }}>
-                Análisis de IA
+                {analysisStep === 'complete' ? 'Diagnóstico IA' : 'Análisis preliminar'}
               </Text>
 
               <View
@@ -308,20 +408,14 @@ export default function CheckInScreen() {
                   <Text style={{ color: '#A0A0A0', fontSize: 12 }}>Salud de la planta</Text>
                   <View
                     style={{
-                      backgroundColor: analysis.health_score >= 75 ? '#22C55E' : '#C47A2C',
+                      backgroundColor: analysis.health_score >= 75 ? '#22C55E' : analysis.health_score >= 50 ? '#C47A2C' : '#EF4444',
                       paddingHorizontal: 12,
                       paddingVertical: 4,
                       borderRadius: 12,
                     }}
                   >
-                    <Text
-                      style={{
-                        color: '#0A0A0A',
-                        fontWeight: '600',
-                        fontSize: 12,
-                      }}
-                    >
-                      {analysis.health_score}%
+                    <Text style={{ color: '#0A0A0A', fontWeight: '600', fontSize: 12 }}>
+                      {analysis.health_score}/100
                     </Text>
                   </View>
                 </View>
@@ -330,30 +424,37 @@ export default function CheckInScreen() {
                   style={{
                     color: '#E0E0E0',
                     fontSize: 14,
-                    lineHeight: 20,
+                    lineHeight: 22,
                     marginBottom: 12,
                   }}
                 >
                   {analysis.diagnosis}
                 </Text>
 
+                {analysis.identified_issues.length > 0 && (
+                  <View style={{ marginBottom: 12 }}>
+                    <Text style={{ color: '#C47A2C', fontSize: 13, fontWeight: '600', marginBottom: 8 }}>
+                      Problemas detectados:
+                    </Text>
+                    {analysis.identified_issues.map((issue: string, index: number) => (
+                      <View key={index} style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 6 }}>
+                        <Text style={{ color: '#EF4444', fontSize: 12, marginRight: 6, marginTop: 1 }}>⚠</Text>
+                        <Text style={{ color: '#FCA5A5', fontSize: 13, flex: 1 }}>{issue}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
                 {analysis.recommendations.length > 0 && (
                   <View>
-                    <Text style={{ color: '#22C55E', fontSize: 12, fontWeight: '600', marginBottom: 8 }}>
+                    <Text style={{ color: '#22C55E', fontSize: 13, fontWeight: '600', marginBottom: 8 }}>
                       Recomendaciones:
                     </Text>
                     {analysis.recommendations.map((rec: string, index: number) => (
-                      <Text
-                        key={index}
-                        style={{
-                          color: '#A0A0A0',
-                          fontSize: 12,
-                          marginLeft: 8,
-                          marginBottom: 6,
-                        }}
-                      >
-                        • {rec}
-                      </Text>
+                      <View key={index} style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 6 }}>
+                        <Text style={{ color: '#22C55E', fontSize: 12, marginRight: 6, marginTop: 1 }}>•</Text>
+                        <Text style={{ color: '#A0A0A0', fontSize: 13, flex: 1, lineHeight: 20 }}>{rec}</Text>
+                      </View>
                     ))}
                   </View>
                 )}
@@ -371,43 +472,6 @@ export default function CheckInScreen() {
               editable={!isLoading}
               keyboardType="decimal-pad"
             />
-          </View>
-
-          {/* Issues */}
-          <View style={{ marginBottom: 24 }}>
-            <Text style={{ fontSize: 16, fontWeight: '600', color: '#FFFFFF', marginBottom: 12 }}>
-              Problemas detectados
-            </Text>
-            <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-              {commonIssues.map((issue) => (
-                <TouchableOpacity
-                  key={issue}
-                  onPress={() => {
-                    setSelectedIssues((prev) =>
-                      prev.includes(issue) ? prev.filter((i) => i !== issue) : [...prev, issue]
-                    );
-                  }}
-                  style={{
-                    paddingHorizontal: 12,
-                    paddingVertical: 8,
-                    borderRadius: 20,
-                    backgroundColor: selectedIssues.includes(issue) ? '#C47A2C' : '#1A1A2E',
-                    borderWidth: 1,
-                    borderColor: selectedIssues.includes(issue) ? '#C47A2C' : '#3A3A4E',
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: selectedIssues.includes(issue) ? '#0A0A0A' : '#A0A0A0',
-                      fontWeight: '600',
-                      fontSize: 12,
-                    }}
-                  >
-                    {issue}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
           </View>
 
           {/* Notes */}
@@ -428,7 +492,7 @@ export default function CheckInScreen() {
           <Button
             title={isLoading ? 'Guardando...' : 'Guardar check-in'}
             onPress={handleSubmit}
-            disabled={!photo || !heightCm || isLoading || isAnalyzing}
+            disabled={photos.length === 0 || !heightCm || isLoading || isAnalyzing}
             loading={isLoading}
             size="large"
           />
