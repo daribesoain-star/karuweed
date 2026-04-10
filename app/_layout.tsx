@@ -1,15 +1,58 @@
-import React, { useEffect, useState } from 'react';
-import { Slot, Redirect, useSegments } from 'expo-router';
+import React, { useEffect } from 'react';
+import { Slot, Redirect, useSegments, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { View, ActivityIndicator, Text } from 'react-native';
+import * as Linking from 'expo-linking';
+import { supabase } from '../src/lib/supabase';
 import { useAuthStore } from '../src/store/authStore';
 
 function AppContent() {
   const { user, isLoading, fetchUser } = useAuthStore();
   const segments = useSegments();
+  const router = useRouter();
 
   useEffect(() => {
     fetchUser();
+  }, []);
+
+  // Handle deep links for Supabase Auth (password reset, email confirmation)
+  useEffect(() => {
+    const handleDeepLink = async (url: string) => {
+      // Supabase sends tokens in the URL fragment or query params
+      // e.g. karuweed://reset-password#access_token=...&refresh_token=...&type=recovery
+      const hashIndex = url.indexOf('#');
+      if (hashIndex === -1) return;
+
+      const fragment = url.substring(hashIndex + 1);
+      const params = new URLSearchParams(fragment);
+      const accessToken = params.get('access_token');
+      const refreshToken = params.get('refresh_token');
+      const type = params.get('type');
+
+      if (accessToken && refreshToken) {
+        // Set the session from the deep link tokens
+        await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+
+        if (type === 'recovery') {
+          router.replace('/reset-password');
+        }
+      }
+    };
+
+    // Handle URL that opened the app
+    Linking.getInitialURL().then((url) => {
+      if (url) handleDeepLink(url);
+    });
+
+    // Handle URLs while app is running
+    const subscription = Linking.addEventListener('url', (event) => {
+      handleDeepLink(event.url);
+    });
+
+    return () => subscription.remove();
   }, []);
 
   if (isLoading) {
@@ -29,8 +72,9 @@ function AppContent() {
   }
 
   const inAuthGroup = segments[0] === '(auth)';
+  const inResetPassword = segments[0] === 'reset-password';
 
-  if (!user && !inAuthGroup) {
+  if (!user && !inAuthGroup && !inResetPassword) {
     return <Redirect href="/(auth)/login" />;
   }
 

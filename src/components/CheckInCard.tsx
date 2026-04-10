@@ -15,10 +15,12 @@ export const CheckInCard: React.FC<CheckInCardProps> = ({ checkIn, onPress }) =>
     locale: es,
   });
 
+  const hasAnalysis = checkIn.ai_analysis != null;
+  const healthScore = hasAnalysis ? checkIn.ai_analysis.health_score : 0;
   const healthScoreColor =
-    checkIn.ai_analysis.health_score >= 75
+    healthScore >= 75
       ? '#22C55E'
-      : checkIn.ai_analysis.health_score >= 50
+      : healthScore >= 50
         ? '#C47A2C'
         : '#EF4444';
 
@@ -58,46 +60,56 @@ export const CheckInCard: React.FC<CheckInCardProps> = ({ checkIn, onPress }) =>
           <Text style={{ color: '#A0A0A0', fontSize: 12 }}>
             {timeAgo}
           </Text>
-          <View
-            style={{
-              backgroundColor: healthScoreColor + '30',
-              borderRadius: 20,
-              paddingHorizontal: 12,
-              paddingVertical: 6,
-            }}
-          >
-            <Text style={{ color: healthScoreColor, fontSize: 12, fontWeight: '600' }}>
-              Salud: {checkIn.ai_analysis.health_score}%
-            </Text>
-          </View>
+          {hasAnalysis && (
+            <View
+              style={{
+                backgroundColor: healthScoreColor + '30',
+                borderRadius: 20,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+              }}
+            >
+              <Text style={{ color: healthScoreColor, fontSize: 12, fontWeight: '600' }}>
+                Salud: {healthScore}%
+              </Text>
+            </View>
+          )}
         </View>
 
-        <Text
-          numberOfLines={2}
-          style={{
-            color: '#E0E0E0',
-            fontSize: 14,
-            lineHeight: 20,
-            marginBottom: 12,
-          }}
-        >
-          {checkIn.ai_analysis.diagnosis}
-        </Text>
-
-        {checkIn.ai_analysis.identified_issues.length > 0 && (
-          <View style={{ marginTop: 8 }}>
-            <Text style={{ color: '#C47A2C', fontSize: 12, fontWeight: '600', marginBottom: 6 }}>
-              Problemas detectados:
+        {hasAnalysis ? (
+          <>
+            <Text
+              numberOfLines={2}
+              style={{
+                color: '#E0E0E0',
+                fontSize: 14,
+                lineHeight: 20,
+                marginBottom: 12,
+              }}
+            >
+              {checkIn.ai_analysis.diagnosis}
             </Text>
-            {checkIn.ai_analysis.identified_issues.slice(0, 2).map((issue, index) => (
-              <Text
-                key={index}
-                style={{ color: '#FFA500', fontSize: 12, marginLeft: 8, marginBottom: 4 }}
-              >
-                • {issue}
-              </Text>
-            ))}
-          </View>
+
+            {checkIn.ai_analysis.identified_issues.length > 0 && (
+              <View style={{ marginTop: 8 }}>
+                <Text style={{ color: '#C47A2C', fontSize: 12, fontWeight: '600', marginBottom: 6 }}>
+                  Problemas detectados:
+                </Text>
+                {checkIn.ai_analysis.identified_issues.slice(0, 2).map((issue, index) => (
+                  <Text
+                    key={index}
+                    style={{ color: '#FFA500', fontSize: 12, marginLeft: 8, marginBottom: 4 }}
+                  >
+                    • {issue}
+                  </Text>
+                ))}
+              </View>
+            )}
+          </>
+        ) : (
+          <Text style={{ color: '#A0A0A0', fontSize: 13, fontStyle: 'italic' }}>
+            Sin análisis de IA
+          </Text>
         )}
       </View>
     </TouchableOpacity>

@@ -142,7 +142,7 @@ export default function CheckInScreen() {
       const arrayBuffer = await new Response(blob).arrayBuffer();
 
       const { error: uploadError } = await supabase.storage
-        .from('checkin-photos')
+        .from('plant-photos')
         .upload(filename, arrayBuffer, {
           contentType: 'image/jpeg',
           upsert: false,
@@ -153,7 +153,7 @@ export default function CheckInScreen() {
       // Get public URL
       const {
         data: { publicUrl },
-      } = supabase.storage.from('checkin-photos').getPublicUrl(filename);
+      } = supabase.storage.from('plant-photos').getPublicUrl(filename);
 
       // Create check-in record (ai_analysis may be null if IA failed)
       const { error: insertError } = await supabase.from('checkins').insert({
