@@ -46,6 +46,12 @@ export default function RegisterScreen() {
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setLocalError('Ingresa un correo electrónico válido');
+      return;
+    }
+
     if (password !== confirmPassword) {
       setLocalError('Las contraseñas no coinciden');
       return;

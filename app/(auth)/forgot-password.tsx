@@ -22,6 +22,12 @@ export default function ForgotPasswordScreen() {
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setLocalError('Ingresa un correo electrónico válido');
+      return;
+    }
+
     try {
       await resetPassword(email);
       setSent(true);

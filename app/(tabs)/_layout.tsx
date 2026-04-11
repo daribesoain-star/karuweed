@@ -18,6 +18,15 @@ function TabBarIcon(props: {
   return (
     <View style={{ alignItems: 'center', justifyContent: 'center' }}>
       <Text style={{ fontSize: 22 }}>{iconMap[props.name]}</Text>
+      {props.focused && (
+        <View style={{
+          width: 4,
+          height: 4,
+          borderRadius: 2,
+          backgroundColor: '#22C55E',
+          marginTop: 2,
+        }} />
+      )}
     </View>
   );
 }

@@ -22,6 +22,12 @@ export default function LoginScreen() {
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setLocalError('Ingresa un correo electrónico válido');
+      return;
+    }
+
     try {
       await signIn(email, password);
       // Navigation is handled automatically by _layout.tsx when user is set

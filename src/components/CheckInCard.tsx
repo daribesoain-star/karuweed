@@ -15,8 +15,9 @@ export const CheckInCard: React.FC<CheckInCardProps> = ({ checkIn, onPress }) =>
     locale: es,
   });
 
-  const hasAnalysis = checkIn.ai_analysis != null;
-  const healthScore = hasAnalysis ? checkIn.ai_analysis.health_score : 0;
+  const analysis = checkIn.ai_analysis;
+  const hasAnalysis = analysis != null;
+  const healthScore = analysis ? analysis.health_score : 0;
   const healthScoreColor =
     healthScore >= 75
       ? '#22C55E'
@@ -101,15 +102,15 @@ export const CheckInCard: React.FC<CheckInCardProps> = ({ checkIn, onPress }) =>
                 marginBottom: 12,
               }}
             >
-              {checkIn.ai_analysis.diagnosis}
+              {analysis!.diagnosis}
             </Text>
 
-            {checkIn.ai_analysis.identified_issues.length > 0 && (
+            {analysis!.identified_issues.length > 0 && (
               <View style={{ marginTop: 8 }}>
                 <Text style={{ color: '#C47A2C', fontSize: 12, fontWeight: '600', marginBottom: 6 }}>
                   Problemas detectados:
                 </Text>
-                {checkIn.ai_analysis.identified_issues.slice(0, 2).map((issue, index) => (
+                {analysis!.identified_issues.slice(0, 2).map((issue, index) => (
                   <Text
                     key={index}
                     style={{ color: '#FFA500', fontSize: 12, marginLeft: 8, marginBottom: 4 }}

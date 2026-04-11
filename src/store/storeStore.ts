@@ -29,8 +29,9 @@ export const useStoreStore = create<StoreState>((set) => ({
       const { data, error } = await query;
       if (error) throw error;
       set({ stores: data || [], isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al cargar tiendas';
+      set({ error: message, isLoading: false });
     }
   },
 
@@ -51,8 +52,9 @@ export const useStoreStore = create<StoreState>((set) => ({
         .sort((a, b) => a.distance - b.distance);
 
       set({ stores: nearby, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al cargar tiendas cercanas';
+      set({ error: message, isLoading: false });
     }
   },
 

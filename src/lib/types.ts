@@ -46,8 +46,8 @@ export interface CheckIn {
   plant_id: string;
   date: string;
   photo_url: string;
-  ai_analysis: AIAnalysis;
-  height_cm: number;
+  ai_analysis: AIAnalysis | null;
+  height_cm: number | null;
   notes?: string;
   issues: string[];
   created_at: string;
