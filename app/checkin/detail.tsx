@@ -17,10 +17,20 @@ export default function CheckInDetailScreen() {
     issues: string;
   }>();
 
-  const analysis = params.ai_analysis ? JSON.parse(params.ai_analysis) : null;
-  const issues = params.issues ? JSON.parse(params.issues) : [];
+  let analysis = null;
+  let issues: string[] = [];
+  try {
+    if (params.ai_analysis) analysis = JSON.parse(params.ai_analysis);
+  } catch { /* invalid JSON */ }
+  try {
+    if (params.issues) issues = JSON.parse(params.issues);
+  } catch { /* invalid JSON */ }
   const heightCm = params.height_cm && params.height_cm !== 'null' ? Number(params.height_cm) : null;
-  const dateStr = params.date ? format(new Date(params.date), "d 'de' MMMM, yyyy · HH:mm", { locale: es }) : '';
+
+  let dateStr = '';
+  try {
+    if (params.date) dateStr = format(new Date(params.date), "d 'de' MMMM, yyyy · HH:mm", { locale: es });
+  } catch { /* invalid date */ }
 
   const healthScore = analysis?.health_score ?? 0;
   const healthColor = healthScore >= 75 ? '#22C55E' : healthScore >= 50 ? '#C47A2C' : '#EF4444';
