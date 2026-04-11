@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { usePlantStore } from '@/store/plantStore';
@@ -26,6 +26,7 @@ export default function PlantDetailScreen() {
   const { getPlantById, updatePlant, deletePlant } = usePlantStore();
   const [checkIns, setCheckIns] = useState<CheckIn[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [strainInfo, setStrainInfo] = useState<StrainInfo | null>(null);
 
   const plant = getPlantById(id as string);
@@ -88,6 +89,13 @@ export default function PlantDetailScreen() {
     flowering: 'Floración',
     harvest: 'Cosecha',
   };
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchCheckIns();
+    await fetchStrainInfo();
+    setRefreshing(false);
+  }, [plant?.id]);
 
   const handleDelete = () => {
     Alert.alert(
@@ -154,6 +162,15 @@ export default function PlantDetailScreen() {
       <ScrollView
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#22C55E"
+            colors={['#22C55E']}
+            progressBackgroundColor="#1A1A2E"
+          />
+        }
       >
         {/* Header */}
         <View
@@ -170,11 +187,18 @@ export default function PlantDetailScreen() {
               ← Atrás
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleDelete}>
-            <Text style={{ color: '#EF4444', fontSize: 16, fontWeight: '600' }}>
-              Eliminar
-            </Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', gap: 16 }}>
+            <TouchableOpacity onPress={() => router.push({ pathname: '/plant/edit', params: { id: plant.id } })}>
+              <Text style={{ color: '#C47A2C', fontSize: 16, fontWeight: '600' }}>
+                Editar
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleDelete}>
+              <Text style={{ color: '#EF4444', fontSize: 16, fontWeight: '600' }}>
+                Eliminar
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Plant Info Card */}
@@ -392,7 +416,18 @@ export default function PlantDetailScreen() {
                 key={checkIn.id}
                 checkIn={checkIn}
                 onPress={() => {
-                  // Could navigate to check-in detail if needed
+                  router.push({
+                    pathname: '/checkin/detail',
+                    params: {
+                      id: checkIn.id,
+                      date: checkIn.date,
+                      photo_url: checkIn.photo_url || '',
+                      height_cm: String(checkIn.height_cm ?? 'null'),
+                      notes: checkIn.notes || '',
+                      ai_analysis: checkIn.ai_analysis ? JSON.stringify(checkIn.ai_analysis) : '',
+                      issues: JSON.stringify(checkIn.issues || []),
+                    },
+                  });
                 }}
               />
             ))

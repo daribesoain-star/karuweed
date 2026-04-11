@@ -9,14 +9,16 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const tierColors: Record<string, string> = {
   basic: '#A0A0A0',
-  verified: '#22C55E',
-  premium: '#C47A2C',
+  silver: '#C0C0C0',
+  gold: '#FFD700',
+  platinum: '#E5E4E2',
 };
 
 const tierLabels: Record<string, string> = {
   basic: 'Tienda',
-  verified: 'Verificada',
-  premium: 'Premium',
+  silver: 'Silver',
+  gold: 'Gold',
+  platinum: 'Platinum',
 };
 
 // Only import MapView on native platforms
@@ -58,7 +60,7 @@ export default function MapScreen() {
       };
       setUserLocation(coords);
       await fetchNearbyStores(coords.latitude, coords.longitude, 100);
-    } catch (error: any) {
+    } catch {
       setLocationError('No se pudo obtener ubicación');
       await fetchStores();
     }
