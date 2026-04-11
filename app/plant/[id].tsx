@@ -6,7 +6,6 @@ import { usePlantStore } from '@/store/plantStore';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/Button';
 import { CheckInCard } from '@/components/CheckInCard';
-import { StageIndicator } from '@/components/StageIndicator';
 import { CheckIn, PlantStage } from '@/lib/types';
 import { differenceInDays, parseISO } from 'date-fns';
 
@@ -80,8 +79,6 @@ export default function PlantDetailScreen() {
   }
 
   const daysOld = differenceInDays(new Date(), parseISO(plant.start_date));
-  const progressPercent = Math.min(daysOld, 100); // Assuming 100 days total growth, capped at 100%
-
   const stageLabels: Record<string, string> = {
     germination: 'Germinación',
     seedling: 'Plántula',
@@ -358,12 +355,122 @@ export default function PlantDetailScreen() {
           </View>
         )}
 
-        {/* Stage Indicator */}
+        {/* Health Trend Chart */}
+        {(() => {
+          const healthCheckins = checkIns
+            .filter(c => c.ai_analysis && c.ai_analysis.health_score > 0)
+            .reverse()
+            .slice(-7);
+          if (healthCheckins.length < 2) return null;
+          const chartHeight = 80;
+          return (
+            <View style={{ paddingHorizontal: 16, marginBottom: 24 }}>
+              <Text style={{ fontSize: 16, fontWeight: '600', color: '#FFFFFF', marginBottom: 12 }}>
+                Tendencia de salud
+              </Text>
+              <View style={{
+                backgroundColor: '#1A1A2E',
+                borderRadius: 12,
+                padding: 16,
+                borderWidth: 1,
+                borderColor: '#3A3A4E',
+              }}>
+                <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around', height: chartHeight + 20 }}>
+                  {healthCheckins.map((c) => {
+                    const score = c.ai_analysis!.health_score;
+                    const barH = (score / 100) * chartHeight;
+                    const color = score >= 75 ? '#22C55E' : score >= 50 ? '#C47A2C' : '#EF4444';
+                    const date = new Date(c.date);
+                    return (
+                      <View key={c.id} style={{ alignItems: 'center', flex: 1 }}>
+                        <Text style={{ color, fontSize: 10, fontWeight: '600', marginBottom: 4 }}>
+                          {score}%
+                        </Text>
+                        <View style={{
+                          width: 20,
+                          height: Math.max(barH, 4),
+                          backgroundColor: color,
+                          borderRadius: 4,
+                        }} />
+                        <Text style={{ color: '#A0A0A0', fontSize: 9, marginTop: 4 }}>
+                          {date.getDate()}/{date.getMonth() + 1}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+            </View>
+          );
+        })()}
+
+        {/* Stage Timeline */}
         <View style={{ paddingHorizontal: 16, marginBottom: 24 }}>
           <Text style={{ fontSize: 16, fontWeight: '600', color: '#FFFFFF', marginBottom: 16 }}>
-            Progreso
+            Timeline
           </Text>
-          <StageIndicator stage={plant.stage} progress={progressPercent} />
+          <View style={{ backgroundColor: '#1A1A2E', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#3A3A4E' }}>
+            {(() => {
+              const stages: PlantStage[] = ['germination', 'seedling', 'vegetative', 'flowering', 'harvest'];
+              const stageEmojis: Record<string, string> = {
+                germination: '🌰',
+                seedling: '🌱',
+                vegetative: '🌿',
+                flowering: '🌸',
+                harvest: '✨',
+              };
+              const currentIdx = stages.indexOf(plant.stage);
+              return stages.map((stg, i) => {
+                const isCompleted = i < currentIdx;
+                const isCurrent = i === currentIdx;
+                const isFuture = i > currentIdx;
+                return (
+                  <View key={stg} style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: i < stages.length - 1 ? 0 : 0 }}>
+                    {/* Timeline line + dot */}
+                    <View style={{ alignItems: 'center', width: 32 }}>
+                      <View style={{
+                        width: isCurrent ? 28 : 20,
+                        height: isCurrent ? 28 : 20,
+                        borderRadius: 14,
+                        backgroundColor: isCompleted ? '#22C55E' : isCurrent ? '#22C55E20' : '#3A3A4E',
+                        borderWidth: isCurrent ? 2 : 0,
+                        borderColor: '#22C55E',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                        <Text style={{ fontSize: isCurrent ? 14 : 10 }}>
+                          {isCompleted ? '✓' : stageEmojis[stg]}
+                        </Text>
+                      </View>
+                      {i < stages.length - 1 && (
+                        <View style={{
+                          width: 2,
+                          height: 24,
+                          backgroundColor: isCompleted ? '#22C55E' : '#3A3A4E',
+                        }} />
+                      )}
+                    </View>
+                    {/* Label */}
+                    <View style={{ marginLeft: 12, paddingBottom: i < stages.length - 1 ? 8 : 0, flex: 1 }}>
+                      <Text style={{
+                        color: isFuture ? '#666' : '#FFFFFF',
+                        fontWeight: isCurrent ? '700' : '500',
+                        fontSize: isCurrent ? 15 : 13,
+                      }}>
+                        {stageLabels[stg]}
+                        {isCurrent ? ' (actual)' : ''}
+                      </Text>
+                      {isCurrent && (
+                        <Text style={{ color: '#22C55E', fontSize: 11, marginTop: 2 }}>
+                          Dia {daysOld} de cultivo
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                );
+              });
+            })()}
+          </View>
         </View>
 
         {/* Action Buttons */}

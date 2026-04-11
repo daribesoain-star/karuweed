@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/store/authStore';
 import { usePlantStore } from '@/store/plantStore';
 import { supabase } from '@/lib/supabase';
@@ -8,9 +9,12 @@ import { Button } from '@/components/Button';
 import { differenceInDays } from 'date-fns';
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const { user, signOut } = useAuthStore();
   const { plants } = usePlantStore();
   const [totalCheckIns, setTotalCheckIns] = useState(0);
+  const [editingName, setEditingName] = useState(false);
+  const [nameValue, setNameValue] = useState(user?.full_name || '');
 
   useEffect(() => {
     if (user && plants.length > 0) {
@@ -30,6 +34,22 @@ export default function ProfileScreen() {
   const memberSince = user?.created_at
     ? differenceInDays(new Date(), new Date(user.created_at))
     : 0;
+
+  const handleSaveName = async () => {
+    if (!nameValue.trim()) {
+      Alert.alert('Error', 'El nombre no puede estar vacio');
+      return;
+    }
+    try {
+      await supabase.from('profiles').update({ full_name: nameValue.trim() }).eq('id', user!.id);
+      useAuthStore.setState((state) => ({
+        user: state.user ? { ...state.user, full_name: nameValue.trim() } : null,
+      }));
+      setEditingName(false);
+    } catch {
+      Alert.alert('Error', 'No se pudo actualizar el nombre');
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -89,9 +109,41 @@ export default function ProfileScreen() {
             >
               <Text style={{ fontSize: 40 }}>👤</Text>
             </View>
-            <Text style={{ fontSize: 20, fontWeight: '700', color: '#FFFFFF', marginBottom: 4 }}>
-              {user?.full_name}
-            </Text>
+            {editingName ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 8 }}>
+                <TextInput
+                  value={nameValue}
+                  onChangeText={setNameValue}
+                  autoFocus
+                  style={{
+                    flex: 1,
+                    backgroundColor: '#0A0A0A',
+                    borderWidth: 1,
+                    borderColor: '#22C55E',
+                    borderRadius: 8,
+                    paddingHorizontal: 12,
+                    paddingVertical: 8,
+                    color: '#FFFFFF',
+                    fontSize: 18,
+                    fontWeight: '700',
+                  }}
+                  onSubmitEditing={handleSaveName}
+                />
+                <TouchableOpacity onPress={handleSaveName} style={{ backgroundColor: '#22C55E', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 }}>
+                  <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 13 }}>OK</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => { setEditingName(false); setNameValue(user?.full_name || ''); }}>
+                  <Text style={{ color: '#A0A0A0', fontSize: 13 }}>X</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity onPress={() => setEditingName(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <Text style={{ fontSize: 20, fontWeight: '700', color: '#FFFFFF' }}>
+                  {user?.full_name || 'Sin nombre'}
+                </Text>
+                <Text style={{ color: '#A0A0A0', fontSize: 12 }}>editar</Text>
+              </TouchableOpacity>
+            )}
             <Text style={{ color: '#A0A0A0', fontSize: 14, marginBottom: 16 }}>
               {user?.email}
             </Text>
@@ -158,28 +210,7 @@ export default function ProfileScreen() {
             }}
           >
             <TouchableOpacity
-              style={{
-                paddingHorizontal: 16,
-                paddingVertical: 16,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                borderBottomWidth: 1,
-                borderBottomColor: '#3A3A4E',
-              }}
-            >
-              <View>
-                <Text style={{ color: '#FFFFFF', fontWeight: '600', marginBottom: 4 }}>
-                  Notificaciones
-                </Text>
-                <Text style={{ color: '#A0A0A0', fontSize: 12 }}>
-                  Gestiona alertas
-                </Text>
-              </View>
-              <Text style={{ color: '#A0A0A0' }}>›</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
+              onPress={() => router.push('/settings')}
               style={{
                 paddingHorizontal: 16,
                 paddingVertical: 16,
@@ -190,10 +221,10 @@ export default function ProfileScreen() {
             >
               <View>
                 <Text style={{ color: '#FFFFFF', fontWeight: '600', marginBottom: 4 }}>
-                  Privacidad
+                  Notificaciones y preferencias
                 </Text>
                 <Text style={{ color: '#A0A0A0', fontSize: 12 }}>
-                  Datos personales
+                  Alertas, riego, unidades
                 </Text>
               </View>
               <Text style={{ color: '#A0A0A0' }}>›</Text>
