@@ -78,7 +78,7 @@ export interface Store {
   address: string;
   latitude: number;
   longitude: number;
-  tier: 'basic' | 'verified' | 'premium';
+  tier: 'basic' | 'silver' | 'gold' | 'platinum';
   logo_url?: string;
   hours?: StoreHours;
   contact?: StoreContact;

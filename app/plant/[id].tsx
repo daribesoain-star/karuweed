@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/Button';
 import { CheckInCard } from '@/components/CheckInCard';
 import { StageIndicator } from '@/components/StageIndicator';
-import { CheckIn } from '@/lib/types';
+import { CheckIn, PlantStage } from '@/lib/types';
 import { differenceInDays, parseISO } from 'date-fns';
 
 interface StrainInfo {
@@ -79,7 +79,7 @@ export default function PlantDetailScreen() {
   }
 
   const daysOld = differenceInDays(new Date(), parseISO(plant.start_date));
-  const progressPercent = (daysOld / 100) * 100; // Assuming 100 days total growth
+  const progressPercent = Math.min(daysOld, 100); // Assuming 100 days total growth, capped at 100%
 
   const stageLabels: Record<string, string> = {
     germination: 'Germinación',
@@ -112,11 +112,41 @@ export default function PlantDetailScreen() {
   };
 
   const handleToggleActive = async () => {
-    try {
-      await updatePlant(plant.id, { is_active: !plant.is_active });
-    } catch (error) {
-      Alert.alert('Error', 'No se pudo actualizar el estado');
-    }
+    const action = plant.is_active ? 'desactivar' : 'reactivar';
+    Alert.alert(
+      `¿${plant.is_active ? 'Desactivar' : 'Reactivar'} planta?`,
+      plant.is_active
+        ? 'La planta pasará a completadas y no aparecerá en check-ins.'
+        : 'La planta volverá a aparecer como activa.',
+      [
+        { text: 'Cancelar' },
+        {
+          text: plant.is_active ? 'Desactivar' : 'Reactivar',
+          onPress: async () => {
+            try {
+              await updatePlant(plant.id, { is_active: !plant.is_active });
+            } catch {
+              Alert.alert('Error', 'No se pudo actualizar el estado');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleChangeStage = () => {
+    const stages: PlantStage[] = ['germination', 'seedling', 'vegetative', 'flowering', 'harvest'];
+    const buttons = stages.map(stg => ({
+      text: `${stageLabels[stg]}${stg === plant.stage ? ' (actual)' : ''}`,
+      onPress: () => {
+        if (stg === plant.stage) return;
+        updatePlant(plant.id, { stage: stg }).catch(() => {
+          Alert.alert('Error', 'No se pudo cambiar la fase');
+        });
+      },
+    }));
+    buttons.push({ text: 'Cancelar', onPress: () => {} });
+    Alert.alert('Cambiar fase', 'Selecciona la nueva fase de tu planta', buttons);
   };
 
   return (
@@ -312,13 +342,31 @@ export default function PlantDetailScreen() {
           <StageIndicator stage={plant.stage} progress={progressPercent} />
         </View>
 
-        {/* Check-in Button */}
+        {/* Action Buttons */}
         <View style={{ paddingHorizontal: 16, marginBottom: 24 }}>
           <Button
             title="Nuevo check-in"
             onPress={() => router.push(`/checkin/${plant.id}`)}
             size="large"
           />
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+            <View style={{ flex: 1 }}>
+              <Button
+                title="Cambiar fase"
+                onPress={handleChangeStage}
+                variant="secondary"
+                size="medium"
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Button
+                title={plant.is_active ? 'Desactivar' : 'Reactivar'}
+                onPress={handleToggleActive}
+                variant="secondary"
+                size="medium"
+              />
+            </View>
+          </View>
         </View>
 
         {/* Check-ins Section */}

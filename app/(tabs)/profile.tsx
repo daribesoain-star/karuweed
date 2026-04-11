@@ -1,11 +1,35 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '@/store/authStore';
+import { usePlantStore } from '@/store/plantStore';
+import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/Button';
+import { differenceInDays } from 'date-fns';
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuthStore();
+  const { plants } = usePlantStore();
+  const [totalCheckIns, setTotalCheckIns] = useState(0);
+
+  useEffect(() => {
+    if (user && plants.length > 0) {
+      const plantIds = plants.map(p => p.id);
+      supabase
+        .from('checkins')
+        .select('id', { count: 'exact', head: true })
+        .in('plant_id', plantIds)
+        .then(({ count }) => {
+          if (count != null) setTotalCheckIns(count);
+        });
+    }
+  }, [user, plants]);
+
+  const activePlants = plants.filter(p => p.is_active);
+  const completedPlants = plants.filter(p => !p.is_active);
+  const memberSince = user?.created_at
+    ? differenceInDays(new Date(), new Date(user.created_at))
+    : 0;
 
   const handleLogout = async () => {
     try {
@@ -90,6 +114,31 @@ export default function ProfileScreen() {
                 {subscriptionTiers[user?.subscription_tier || 'free']}
               </Text>
             </View>
+          </View>
+        </View>
+
+        {/* Stats */}
+        <View style={{ paddingHorizontal: 16, marginBottom: 24 }}>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: '#FFFFFF', marginBottom: 12 }}>
+            Estadísticas
+          </Text>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <View style={{ flex: 1, backgroundColor: '#0B3D2E', borderRadius: 10, padding: 14, borderWidth: 1, borderColor: '#22C55E40' }}>
+              <Text style={{ color: '#A0A0A0', fontSize: 11 }}>Activas</Text>
+              <Text style={{ color: '#22C55E', fontSize: 22, fontWeight: '700' }}>{activePlants.length}</Text>
+            </View>
+            <View style={{ flex: 1, backgroundColor: '#1A1A2E', borderRadius: 10, padding: 14, borderWidth: 1, borderColor: '#3A3A4E' }}>
+              <Text style={{ color: '#A0A0A0', fontSize: 11 }}>Completadas</Text>
+              <Text style={{ color: '#86EFAC', fontSize: 22, fontWeight: '700' }}>{completedPlants.length}</Text>
+            </View>
+            <View style={{ flex: 1, backgroundColor: '#1A1A2E', borderRadius: 10, padding: 14, borderWidth: 1, borderColor: '#3A3A4E' }}>
+              <Text style={{ color: '#A0A0A0', fontSize: 11 }}>Check-ins</Text>
+              <Text style={{ color: '#C47A2C', fontSize: 22, fontWeight: '700' }}>{totalCheckIns}</Text>
+            </View>
+          </View>
+          <View style={{ backgroundColor: '#1A1A2E', borderRadius: 10, padding: 14, marginTop: 8, borderWidth: 1, borderColor: '#3A3A4E' }}>
+            <Text style={{ color: '#A0A0A0', fontSize: 11 }}>Miembro desde hace</Text>
+            <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}>{memberSince} días</Text>
           </View>
         </View>
 
