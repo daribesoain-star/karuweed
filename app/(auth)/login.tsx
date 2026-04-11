@@ -24,7 +24,7 @@ export default function LoginScreen() {
 
     try {
       await signIn(email, password);
-      router.replace('/(tabs)');
+      // Navigation is handled automatically by _layout.tsx when user is set
     } catch (err) {
       // Error is already set in the store with Spanish translation
     }

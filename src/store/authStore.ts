@@ -64,7 +64,19 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
           .eq('id', data.user.id)
           .single();
 
-        if (profileError) throw profileError;
+        if (profileError) {
+          // Profile might not exist yet (trigger delay) — create a minimal one
+          const fallbackUser: User = {
+            id: data.user.id,
+            email: data.user.email || email,
+            full_name: data.user.user_metadata?.full_name || '',
+            country_code: data.user.user_metadata?.country_code || '',
+            subscription_tier: 'free',
+            created_at: new Date().toISOString(),
+          };
+          set({ user: fallbackUser, isLoading: false });
+          return;
+        }
 
         set({
           user: profile as User,
