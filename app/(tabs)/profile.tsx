@@ -12,7 +12,7 @@ export default function ProfileScreen() {
   const handleLogout = async () => {
     try {
       await signOut();
-      router.replace('/(auth)/login');
+      // Navigation handled by _layout.tsx auth guard
     } catch (error) {
       console.error('Logout error:', error);
     }

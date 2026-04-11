@@ -10,20 +10,47 @@ import { StageIndicator } from '@/components/StageIndicator';
 import { CheckIn } from '@/lib/types';
 import { differenceInDays, parseISO } from 'date-fns';
 
+interface StrainInfo {
+  thc_range: string;
+  cbd_range: string;
+  flowering_days_min: number;
+  flowering_days_max: number;
+  difficulty: string;
+  yield_indoor: string;
+  description: string;
+}
+
 export default function PlantDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { getPlantById, updatePlant, deletePlant } = usePlantStore();
   const [checkIns, setCheckIns] = useState<CheckIn[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [strainInfo, setStrainInfo] = useState<StrainInfo | null>(null);
 
   const plant = getPlantById(id as string);
 
   useEffect(() => {
     if (plant) {
       fetchCheckIns();
+      fetchStrainInfo();
     }
   }, [plant?.id]);
+
+  const fetchStrainInfo = async () => {
+    if (!plant) return;
+    try {
+      const { data } = await supabase
+        .from('strains')
+        .select('thc_range, cbd_range, flowering_days_min, flowering_days_max, difficulty, yield_indoor, description')
+        .ilike('name', plant.strain)
+        .limit(1)
+        .single();
+      if (data) setStrainInfo(data as StrainInfo);
+    } catch {
+      // Strain not found in DB, that's OK
+    }
+  };
 
   const fetchCheckIns = async () => {
     try {
@@ -186,6 +213,96 @@ export default function PlantDetailScreen() {
             )}
           </View>
         </View>
+
+        {/* Strain Info Card */}
+        {strainInfo && (
+          <View style={{ paddingHorizontal: 16, marginBottom: 24 }}>
+            <Text style={{ fontSize: 16, fontWeight: '600', color: '#FFFFFF', marginBottom: 12 }}>
+              Sobre la variedad
+            </Text>
+            <View style={{
+              backgroundColor: '#0B3D2E',
+              borderRadius: 12,
+              padding: 16,
+              borderWidth: 1,
+              borderColor: '#22C55E40',
+            }}>
+              <Text style={{ color: '#D1FAE5', fontSize: 13, lineHeight: 20, marginBottom: 12 }}>
+                {strainInfo.description}
+              </Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                <View style={{ backgroundColor: '#0A0A0A80', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 5 }}>
+                  <Text style={{ color: '#A0A0A0', fontSize: 10 }}>THC</Text>
+                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}>{strainInfo.thc_range}</Text>
+                </View>
+                <View style={{ backgroundColor: '#0A0A0A80', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 5 }}>
+                  <Text style={{ color: '#A0A0A0', fontSize: 10 }}>CBD</Text>
+                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}>{strainInfo.cbd_range}</Text>
+                </View>
+                <View style={{ backgroundColor: '#0A0A0A80', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 5 }}>
+                  <Text style={{ color: '#A0A0A0', fontSize: 10 }}>Floración</Text>
+                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}>{strainInfo.flowering_days_min}-{strainInfo.flowering_days_max}d</Text>
+                </View>
+                <View style={{ backgroundColor: '#0A0A0A80', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 5 }}>
+                  <Text style={{ color: '#A0A0A0', fontSize: 10 }}>Rendimiento</Text>
+                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}>{strainInfo.yield_indoor}</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
+
+        {/* Height Progress Chart */}
+        {checkIns.length > 1 && (
+          <View style={{ paddingHorizontal: 16, marginBottom: 24 }}>
+            <Text style={{ fontSize: 16, fontWeight: '600', color: '#FFFFFF', marginBottom: 12 }}>
+              Crecimiento
+            </Text>
+            <View style={{
+              backgroundColor: '#1A1A2E',
+              borderRadius: 12,
+              padding: 16,
+              borderWidth: 1,
+              borderColor: '#3A3A4E',
+            }}>
+              {(() => {
+                const heights = checkIns
+                  .filter(c => c.height_cm != null)
+                  .reverse()
+                  .slice(-7);
+                if (heights.length < 2) return (
+                  <Text style={{ color: '#A0A0A0', fontSize: 13 }}>Se necesitan al menos 2 check-ins con altura</Text>
+                );
+                const maxH = Math.max(...heights.map(c => c.height_cm!));
+                const chartHeight = 100;
+                return (
+                  <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around', height: chartHeight + 20 }}>
+                    {heights.map((c, i) => {
+                      const barH = maxH > 0 ? (c.height_cm! / maxH) * chartHeight : 0;
+                      const date = new Date(c.date);
+                      return (
+                        <View key={c.id} style={{ alignItems: 'center', flex: 1 }}>
+                          <Text style={{ color: '#22C55E', fontSize: 10, fontWeight: '600', marginBottom: 4 }}>
+                            {c.height_cm}
+                          </Text>
+                          <View style={{
+                            width: 20,
+                            height: Math.max(barH, 4),
+                            backgroundColor: '#22C55E',
+                            borderRadius: 4,
+                          }} />
+                          <Text style={{ color: '#A0A0A0', fontSize: 9, marginTop: 4 }}>
+                            {date.getDate()}/{date.getMonth() + 1}
+                          </Text>
+                        </View>
+                      );
+                    })}
+                  </View>
+                );
+              })()}
+            </View>
+          </View>
+        )}
 
         {/* Stage Indicator */}
         <View style={{ paddingHorizontal: 16, marginBottom: 24 }}>

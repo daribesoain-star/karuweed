@@ -62,10 +62,7 @@ export default function RegisterScreen() {
       // If we get here without error, signup succeeded
       // Check if user was auto-logged-in (no email confirmation required)
       const currentUser = useAuthStore.getState().user;
-      if (currentUser) {
-        // Auto-logged in — go to tabs
-        router.replace('/(tabs)');
-      } else {
+      if (!currentUser) {
         // Email confirmation required
         Alert.alert(
           'Revisa tu correo',
@@ -73,6 +70,7 @@ export default function RegisterScreen() {
           [{ text: 'OK', onPress: () => router.replace('/(auth)/login') }]
         );
       }
+      // If user is set, _layout.tsx will auto-redirect to (tabs)
     } catch (err) {
       // Error is already set in the store with Spanish translation
     }

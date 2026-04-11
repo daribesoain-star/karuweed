@@ -84,7 +84,7 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={{ paddingHorizontal: 16, paddingVertical: 24 }}>
           <Text style={{ fontSize: 28, fontWeight: '700', color: '#FFFFFF', marginBottom: 8 }}>
-            Hola, {user?.full_name.split(' ')[0]}
+            Hola, {user?.full_name?.split(' ')[0] || 'Cultivador'}
           </Text>
           <Text style={{ fontSize: 14, color: '#A0A0A0' }}>
             Aquí está tu resumen de cultivo
@@ -137,26 +137,44 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Quick Action */}
-        <View style={{ paddingHorizontal: 16, marginBottom: 24 }}>
-          <Button
-            title="Nuevo Check-in"
-            onPress={() => {
-              if (activePlants.length > 0) {
-                router.push(`/checkin/${activePlants[0].id}`);
-              } else {
-                Alert.alert(
-                  'Sin plantas activas',
-                  'Primero crea una planta para poder hacer un check-in.',
-                  [
-                    { text: 'Cancelar', style: 'cancel' },
-                    { text: 'Crear planta', onPress: () => router.push('/plant/new') },
-                  ]
-                );
-              }
-            }}
-            size="large"
-          />
+        {/* Quick Actions */}
+        <View style={{ paddingHorizontal: 16, marginBottom: 24, flexDirection: 'row', gap: 10 }}>
+          <View style={{ flex: 1 }}>
+            <Button
+              title="Nuevo Check-in"
+              onPress={() => {
+                if (activePlants.length === 0) {
+                  Alert.alert(
+                    'Sin plantas activas',
+                    'Primero crea una planta para poder hacer un check-in.',
+                    [
+                      { text: 'Cancelar', style: 'cancel' },
+                      { text: 'Crear planta', onPress: () => router.push('/plant/new') },
+                    ]
+                  );
+                } else if (activePlants.length === 1) {
+                  router.push(`/checkin/${activePlants[0].id}`);
+                } else {
+                  // Multiple plants: let user choose
+                  const buttons = activePlants.slice(0, 5).map(p => ({
+                    text: p.name,
+                    onPress: () => router.push(`/checkin/${p.id}`),
+                  }));
+                  buttons.push({ text: 'Cancelar', onPress: () => {} });
+                  Alert.alert('¿Qué planta?', 'Selecciona la planta para el check-in', buttons);
+                }
+              }}
+              size="medium"
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Button
+              title="Nueva Planta"
+              onPress={() => router.push('/plant/new')}
+              variant="secondary"
+              size="medium"
+            />
+          </View>
         </View>
 
         {/* Active Plants Section */}

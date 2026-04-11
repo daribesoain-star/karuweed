@@ -60,20 +60,34 @@ export const CheckInCard: React.FC<CheckInCardProps> = ({ checkIn, onPress }) =>
           <Text style={{ color: '#A0A0A0', fontSize: 12 }}>
             {timeAgo}
           </Text>
-          {hasAnalysis && (
-            <View
-              style={{
-                backgroundColor: healthScoreColor + '30',
+          <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+            {checkIn.height_cm != null && (
+              <View style={{
+                backgroundColor: '#3B82F630',
                 borderRadius: 20,
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-              }}
-            >
-              <Text style={{ color: healthScoreColor, fontSize: 12, fontWeight: '600' }}>
-                Salud: {healthScore}%
-              </Text>
-            </View>
-          )}
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+              }}>
+                <Text style={{ color: '#60A5FA', fontSize: 11, fontWeight: '600' }}>
+                  {checkIn.height_cm} cm
+                </Text>
+              </View>
+            )}
+            {hasAnalysis && (
+              <View
+                style={{
+                  backgroundColor: healthScoreColor + '30',
+                  borderRadius: 20,
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                }}
+              >
+                <Text style={{ color: healthScoreColor, fontSize: 11, fontWeight: '600' }}>
+                  Salud: {healthScore}%
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
 
         {hasAnalysis ? (
