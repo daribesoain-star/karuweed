@@ -1,12 +1,10 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/Button';
 
 export default function ProfileScreen() {
-  const router = useRouter();
   const { user, signOut } = useAuthStore();
 
   const handleLogout = async () => {

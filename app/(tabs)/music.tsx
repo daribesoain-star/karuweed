@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Animated, Easing, Alert, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Animated, Easing, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Audio } from 'expo-av';
 import { PlantStage } from '@/lib/types';

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, FlatList, RefreshControl, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/store/authStore';
@@ -7,8 +7,6 @@ import { usePlantStore } from '@/store/plantStore';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/Button';
 import { PlantCard } from '@/components/PlantCard';
-import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
 
 export default function HomeScreen() {
   const router = useRouter();
