@@ -1,0 +1,105 @@
+INSERT INTO strains (name, type, thc_range, cbd_range, flowering_days_min, flowering_days_max, difficulty, yield_indoor, description) VALUES
+-- Barney's Farm
+('Pineapple Chunk', 'indica', '22-25%', '0.1%', 55, 60, 'easy', '600g/m2', 'Barney''s Farm. Cruce de Pineapple x Skunk #1 x Cheese. Sabor tropical dulce con notas de queso. Efecto relajante potente.'),
+('Laughing Buddha', 'sativa', '18-22%', '0.1%', 70, 75, 'medium', '500g/m2', 'Barney''s Farm. Cannabis Cup winner. Sativa pura tailandesa x jamaicana. Efecto cerebral euforico y energizante.'),
+('Critical Kush', 'indica', '22-25%', '2.1%', 50, 55, 'easy', '650g/m2', 'Barney''s Farm. Critical Mass x OG Kush. Indica potente con CBD notable. Aroma terroso con toques citricos.'),
+('Dos Si Dos 33', 'indica', '24-28%', '0.1%', 60, 65, 'medium', '550g/m2', 'Barney''s Farm. OGKB x Face Off OG. Cogollos ultra densos y resinosos. Sabor cremoso con notas de galleta.'),
+('Gorilla Zkittlez', 'hybrid', '24-27%', '0.1%', 56, 63, 'medium', '700g/m2', 'Barney''s Farm. Gorilla Glue x Zkittlez. Terpenos frutales explosivos. Resina abundante.'),
+-- Dutch Passion
+('Orange Bud', 'hybrid', '16-20%', '0.1%', 56, 63, 'easy', '450g/m2', 'Dutch Passion. Clasica holandesa desde los 80s. Sabor citrico naranja intenso. Efecto equilibrado y motivante.'),
+('Banana Blaze', 'indica', '20-25%', '0.2%', 56, 63, 'easy', '500g/m2', 'Dutch Passion. Aroma y sabor intenso a banana madura. Efecto corporal relajante. Planta compacta.'),
+('Glueberry OG', 'hybrid', '24-28%', '0.1%', 56, 63, 'medium', '550g/m2', 'Dutch Passion. Gorilla Glue x OG x Blueberry. Triple cruce premium. Resina extrema. Cannabis Cup winner.'),
+('CBD Charlotte Angel', 'sativa', '0.5-1%', '15-20%', 63, 70, 'easy', '450g/m2', 'Dutch Passion. Variedad CBD casi sin THC. Ideal terapeutico. Sabor dulce floral. Sin efecto psicoactivo.'),
+('Master Kush', 'indica', '20-24%', '0.1%', 49, 56, 'easy', '500g/m2', 'Dutch Passion. Hindu Kush x Skunk. Cannabis Cup winner. Sabor terroso con incienso. Efecto indica relajante.'),
+-- Dinafem
+('Moby Dick', 'sativa', '21-27%', '0.1%', 63, 70, 'medium', '650g/m2', 'Dinafem. White Widow x Haze. Una de las sativas mas potentes. Produccion masiva. Sabor a eucalipto y limon.'),
+('OG Kush CBD', 'hybrid', '10-12%', '10-12%', 55, 60, 'easy', '500g/m2', 'Dinafem. Version CBD 1:1 de la clasica OG Kush. Sabor terroso kushy. Efecto equilibrado.'),
+('Critical+ 2.0', 'indica', '20-22%', '0.1%', 45, 50, 'easy', '625g/m2', 'Dinafem. Version mejorada de la Critical+. Floracion ultra rapida. Produccion enorme. Ideal para novatos.'),
+('Amnesia CBD', 'sativa', '7-10%', '7-10%', 60, 65, 'medium', '500g/m2', 'Dinafem. Version CBD de Amnesia Haze. Ratio 1:1 THC:CBD. Sabor a incienso y limon.'),
+-- Sweet Seeds
+('Sweet Gelato Auto', 'auto', '20-23%', '0.1%', 50, 55, 'easy', '450-550g/m2', 'Sweet Seeds. Autofloreciente de Gelato. Sabor dulce cremoso. Rapida y productiva.'),
+('Red Poison Auto', 'auto', '15-18%', '0.1%', 50, 56, 'easy', '400-500g/m2', 'Sweet Seeds. Autofloreciente con coloracion purpura/roja intensa. Muy fotogenica. Sabor frutal.'),
+('Cream Mandarine Auto', 'auto', '18-21%', '0.1%', 49, 56, 'easy', '400-500g/m2', 'Sweet Seeds. Aroma intenso a mandarina. Autofloreciente rapida. Efecto energizante.'),
+('Dark Devil Auto', 'auto', '16-20%', '0.1%', 50, 56, 'easy', '400-500g/m2', 'Sweet Seeds. Autofloreciente con hojas casi negras. Muy llamativa. Sabor afrutado oscuro.'),
+('Killer Kush Auto', 'auto', '18-22%', '0.1%', 49, 56, 'easy', '400-500g/m2', 'Sweet Seeds. OG Kush autofloreciente. Sabor terroso diesel. Efecto potente indica. Compacta y discreta.'),
+-- Royal Queen Seeds
+('Royal Cookies', 'indica', '23%', '0.1%', 56, 63, 'medium', '475-525g/m2', 'Royal Queen Seeds. GSC fenotipo elite. Sabor a galleta con chocolate. Efecto potente y relajante.'),
+('Green Gelato', 'hybrid', '27%', '0.1%', 56, 63, 'medium', '500-700g/m2', 'Royal Queen Seeds. Sunset Sherbet x Thin Mint GSC. THC extremo. Sabor dulce helado.'),
+('Amnesia Haze XL', 'sativa', '21%', '0.1%', 70, 77, 'hard', '600-650g/m2', 'Royal Queen Seeds. Version XL de Amnesia. Produccion masiva sativa. Efecto cerebral potente.'),
+('Royal Dwarf Auto', 'auto', '13-15%', '0.1%', 49, 56, 'easy', '200-300g/m2', 'Royal Queen Seeds. Ultra compacta para micro-cultivo. Discreta y rapida. Sabor skunk suave.'),
+('Watermelon Auto', 'auto', '20-22%', '0.1%', 56, 63, 'easy', '400-500g/m2', 'Royal Queen Seeds. Sabor a sandia dulce. Autofloreciente productiva. Efecto relajante y euforico.'),
+-- Fast Buds
+('Gorilla Cookies Auto', 'auto', '27%', '0.1%', 56, 63, 'medium', '450-600g/m2', 'Fast Buds. GSC x GG4. Auto de ultima generacion con THC altisimo. Sabor a galleta y diesel.'),
+('Strawberry Banana Auto', 'auto', '27%', '0.1%', 63, 70, 'medium', '450-600g/m2', 'Fast Buds. Strawberry x Banana Kush auto. Terpenos frutales intensos. Produccion excelente.'),
+('Lemon Pie Auto', 'auto', '24%', '0.1%', 56, 63, 'easy', '400-550g/m2', 'Fast Buds. Aroma explosivo a limon y tarta. Autofloreciente productiva. Efecto creativo.'),
+('Purple Lemonade Auto', 'auto', '22%', '0.1%', 63, 70, 'easy', '400-500g/m2', 'Fast Buds. Purpura intensa con sabor a limonada. Muy fotogenica. Efecto equilibrado.'),
+('Original Auto OG Kush', 'auto', '23%', '0.1%', 63, 70, 'easy', '400-500g/m2', 'Fast Buds. Version auto de OG Kush. Sabor terroso diesel clasico. Efecto potente hibrido.'),
+-- Humboldt Seed Co
+('Blueberry Muffin', 'indica', '22-25%', '0.1%', 56, 63, 'medium', '450g/m2', 'Humboldt Seed Co. Sabor exacto a muffin de arandanos. Terpenos unicos. Cogollos purpuras.'),
+('Pineapple Upside Down Cake', 'hybrid', '20-24%', '0.1%', 56, 63, 'medium', '500g/m2', 'Humboldt Seed Co. Sabor tropical de pina y masa dulce. Efecto euforico y social.'),
+-- Seed Stockers
+('BCN Critical XXL Auto', 'auto', '22%', '0.1%', 70, 77, 'easy', '500-650g/m2', 'Seed Stockers. Auto de alta produccion basada en Critical. Cogollos enormes y densos.'),
+('Blackberry Gum Auto', 'auto', '20-23%', '0.1%', 63, 70, 'easy', '500g/m2', 'Seed Stockers. Aroma a chicle de mora. Autofloreciente robusta y productiva.'),
+-- Exotic Genetix
+('Grease Monkey', 'indica', '25-31%', '0.1%', 56, 63, 'medium', '500g/m2', 'Exotic Genetix. GG4 x Cookies & Cream. THC extremo. Sabor vanilla y diesel. Efecto muy potente.'),
+('Rainbow Belts', 'hybrid', '25-28%', '0.1%', 56, 63, 'hard', '450g/m2', 'Exotic Genetix. Zkittlez x Moonbow. Terpenos frutales como caramelos. Coloracion multicolor.'),
+-- Sensi Seeds
+('Shiva Skunk', 'indica', '13-20%', '0.1%', 45, 50, 'easy', '450g/m2', 'Sensi Seeds. NL5 x Skunk 1. Clasica holandesa muy estable. Floracion rapida. Ideal para novatos.'),
+('Silver Haze', 'sativa', '21-24%', '0.1%', 63, 70, 'medium', '450g/m2', 'Sensi Seeds. NL x Haze x Skunk. Cannabis Cup multiple. Efecto sativa potente y duradero.'),
+('Hash Plant', 'indica', '15-20%', '0.1%', 40, 45, 'easy', '400g/m2', 'Sensi Seeds. Clasica indica. Floracion ultra rapida. Resina abundante ideal para hash.'),
+-- Greenhouse Seeds
+('King Kush', 'indica', '20-24%', '0.1%', 49, 56, 'easy', '500g/m2', 'Greenhouse Seeds. OG Kush x Grape. Sabor a uva con diesel. Efecto indica potente y sedante.'),
+('Great White Shark', 'indica', '15-21%', '0.1%', 56, 63, 'easy', '800g/m2', 'Greenhouse Seeds. Super Skunk x Brazilian x South Indian. Produccion monstruosa.'),
+-- Paradise Seeds
+('Ice Cream PS', 'indica', '20-23%', '0.1%', 56, 63, 'easy', '500g/m2', 'Paradise Seeds. Sabor cremoso vanilla intenso. Planta robusta y facil. Efecto relajante y feliz.'),
+('Wappa', 'indica', '18-22%', '0.1%', 49, 56, 'easy', '550g/m2', 'Paradise Seeds. Genetica secreta holandesa. Sabor dulce floral. Produccion alta. Muy facil de cultivar.'),
+-- Positronics Seeds
+('Critical #47', 'indica', '20-22%', '0.1%', 45, 50, 'easy', '600g/m2', 'Positronics Seeds. Critical Mass x AK-47. Floracion rapida con produccion masiva. Sabor skunk afrutado.'),
+('Purple Haze #1', 'sativa', '18-22%', '0.1%', 63, 70, 'medium', '500g/m2', 'Positronics Seeds. Seleccion de Purple Haze. Coloracion purpura con sabor floral. Efecto cerebral creativo.'),
+('Mystic Cookie', 'hybrid', '22-25%', '0.1%', 56, 63, 'medium', '500g/m2', 'Positronics Seeds. GSC x Mystic OG. Sabor a galleta con notas OG. Cogollos compactos y potentes.'),
+('Sticky Dream', 'sativa', '18-22%', '0.1%', 60, 65, 'medium', '550g/m2', 'Positronics Seeds. Blue Dream x variedad secreta. Extremadamente resinosa. Sabor frutal con haze.'),
+('CBD Caramel', 'hybrid', '5-8%', '15-20%', 55, 60, 'easy', '450g/m2', 'Positronics Seeds. Variedad CBD terapeutica. Sabor acaramelado suave. Ideal para ansiedad y dolores.'),
+('Grapefruit', 'sativa', '18-22%', '0.1%', 56, 63, 'easy', '500g/m2', 'Positronics Seeds. Sabor pomelo citrico explosivo. Efecto sativa energizante. Planta productiva y facil.'),
+-- Mephisto Genetics (Autos premium)
+('Mango Smile Auto', 'auto', '18-22%', '0.1%', 65, 75, 'easy', '400-500g/m2', 'Mephisto Genetics. Mango Haze auto. Sativa dominante con sabor mango tropical. Auto premium.'),
+('Sour Stomper Auto', 'auto', '22-24%', '0.1%', 60, 70, 'easy', '350-450g/m2', 'Mephisto Genetics. Sour Crack x Grape Stomper auto. Sabor acido frutal. Auto de elite.'),
+-- Ethos Genetics
+('Mandarin Cookies', 'hybrid', '23-27%', '0.1%', 56, 63, 'medium', '500g/m2', 'Ethos Genetics. Forum Cut Cookies x Mandarin Sunset. Sabor citrico con galleta. Efecto euforico.'),
+('Banana Daddy', 'indica', '24-27%', '0.1%', 56, 63, 'medium', '450g/m2', 'Ethos Genetics. Banana OG x GDP. Sabor a banana y uva. Coloracion purpura. Efecto indica potente.'),
+-- Variedades latinoamericanas
+('Paraguaya Sativa', 'sativa', '8-12%', '0.1%', 70, 84, 'easy', '300-400g/m2', 'Landrace sativa paraguaya. La genetica mas comun en Sudamerica. Resistente y adaptable.'),
+('Cordoba Gold', 'sativa', '10-14%', '0.1%', 70, 84, 'easy', '350-450g/m2', 'Landrace argentina de Cordoba. Sativa adaptada al clima templado sudamericano.'),
+('Limachino', 'sativa', '12-16%', '0.1%', 70, 80, 'medium', '350-400g/m2', 'Variedad chilena de Limache. Sativa local adaptada al clima mediterraneo. Sabor herbal citrico.'),
+('Creepy', 'sativa', '15-20%', '0.1%', 63, 77, 'medium', '400g/m2', 'Variedad colombiana premium. Sativa potente con sabor floral y terroso. Efecto cerebral euforico.'),
+('Mango Biche', 'sativa', '14-18%', '0.1%', 63, 77, 'medium', '400g/m2', 'Variedad colombiana con aroma a mango verde. Sativa tropical energizante. Popular en Valle del Cauca.'),
+('Prensado Mejorado', 'sativa', '10-15%', '0.1%', 63, 77, 'easy', '350g/m2', 'Geneticas rescatadas de semillas de prensado sudamericano. Sativa rustica adaptada al exterior. Variable pero resistente.'),
+-- Mas clasicas y populares
+('Strawberry Kush', 'hybrid', '18-22%', '0.1%', 56, 63, 'easy', '450g/m2', 'Strawberry Cough x OG Kush. Sabor fresa con diesel. Efecto equilibrado hibrido. Facil y productiva.'),
+('Lemon Skunk', 'sativa', '15-22%', '0.1%', 56, 63, 'easy', '500g/m2', 'DNA Genetics. Skunk seleccionada por aroma limon. Sabor citrico intenso. Efecto energizante.'),
+('Tahoe OG', 'indica', '20-25%', '0.1%', 63, 70, 'medium', '400g/m2', 'Fenotipo OG Kush de Lake Tahoe. Sabor terroso limonoso diesel. Efecto sedante para insomnio.'),
+('Zkittlez Cake', 'hybrid', '24-28%', '0.1%', 56, 63, 'medium', '500g/m2', 'Zkittlez x Wedding Cake. Sabor frutal con masa dulce. THC alto. Efecto euforico y relajante.'),
+('Tropicana Banana', 'hybrid', '25-28%', '0.1%', 56, 63, 'medium', '500g/m2', 'Tropicana Cookies x Banana Kush. Sabor tropical banana. Terpenos complejos. Coloracion purpura.'),
+('Sundae Driver', 'hybrid', '20-24%', '0.1%', 56, 63, 'medium', '450g/m2', 'FPOG x Grape Pie. Sabor cremoso con frutas. Efecto relajante y euforico.'),
+('Modified Grapes', 'indica', '24-28%', '0.1%', 56, 63, 'medium', '450g/m2', 'Symbiotic Genetics. GMO x Purple Punch. Sabor a uva con ajo. Efecto potente corporal.'),
+('Cake Crasher', 'hybrid', '23-27%', '0.1%', 56, 63, 'medium', '500g/m2', 'Wedding Cake x Wedding Crasher. Sabor dulce cremoso. Produccion excelente. Terpenos complejos.'),
+('Alien OG', 'hybrid', '22-28%', '0.1%', 56, 63, 'medium', '450g/m2', 'Tahoe OG x Alien Kush. Efecto hibrido potente. Sabor terroso con limon y pino.'),
+('Animal Mints', 'hybrid', '25-32%', '0.1%', 56, 63, 'hard', '400g/m2', 'Animal Cookies x SinMint Cookies. THC extremo. Sabor menta con cookie. Solo para experimentados.'),
+('Jealousy #2', 'hybrid', '25-30%', '0.1%', 56, 63, 'medium', '450g/m2', 'Seed Junky Genetics. Gelato 41 x Sherbet. Terpenos cremosos y frutales. Efecto potente y balanceado.'),
+('White Truffle', 'hybrid', '25-30%', '0.1%', 56, 63, 'hard', '400g/m2', 'Fenotipo raro de Gorilla Butter. Sabor terroso con trufa blanca. Terpenos unicos. Muy exclusiva.'),
+('Oreoz', 'hybrid', '25-33%', '0.1%', 56, 63, 'medium', '450g/m2', 'Cookies & Cream x Secret Weapon. Sabor exacto a galleta Oreo. THC extremo. Efecto devastador.'),
+('Triangle Kush', 'indica', '20-26%', '0.1%', 63, 70, 'medium', '400g/m2', 'OG Kush de Florida. Base genetica de muchos cruces modernos. Sabor terroso kushy clasico.'),
+('GMO (Garlic Cookies)', 'indica', '24-30%', '0.1%', 63, 70, 'medium', '450g/m2', 'GSC x Chemdawg. Sabor unico a ajo y cebolla. Terpenos pungentes. Efecto potente y duradero.'),
+('Bacio Gelato', 'hybrid', '25-29%', '0.1%', 56, 63, 'medium', '500g/m2', 'Gelato #41 seleccion. Sabor helado cremoso con notas de cafe. THC alto. Efecto euforico potente.'),
+('Georgia Pie', 'hybrid', '20-25%', '0.1%', 56, 63, 'medium', '450g/m2', 'Seed Junky. Gelatti x Kush Mints. Sabor dulce a tarta de durazno. Efecto relajante y positivo.'),
+('Pink Runtz', 'hybrid', '23-25%', '0.1%', 56, 63, 'medium', '450g/m2', 'Pink Panties x Rainbow Sherbet. Version rosada de Runtz. Sabor dulce afrutado. Efecto equilibrado.'),
+('Fatso', 'indica', '25-30%', '0.1%', 63, 70, 'medium', '400g/m2', 'GMO x Legends OG. Sabor terroso con ajo y diesel. Efecto indica pesado y sedante. Alta resina.'),
+('Zoap', 'hybrid', '25-28%', '0.1%', 56, 63, 'hard', '400g/m2', 'Rainbow Sherbet x Pink Guava. Sabor jabon dulce unico. Terpenos complejos. Genetica boutique exclusiva.'),
+('First Class Funk', 'hybrid', '25-28%', '0.1%', 56, 63, 'medium', '450g/m2', 'GMO x Jet Fuel Gelato. Sabor funky diesel con galleta. Efecto potente y creativo. Resina extrema.'),
+('Pancakes', 'indica', '24-30%', '0.1%', 56, 63, 'medium', '450g/m2', 'Kush Mints x London Pound Cake 75. Sabor dulce a panqueques con mantequilla. Efecto relajante.'),
+('Black Cherry Gelato', 'hybrid', '22-26%', '0.1%', 56, 63, 'medium', '500g/m2', 'Black Cherry Funk x Acai Gelato. Sabor cereza oscura con helado. Coloracion purpura intensa.'),
+('Grape Gas', 'indica', '24-28%', '0.1%', 56, 63, 'medium', '450g/m2', 'Grape Pie x Jet Fuel. Sabor uva con gasolina. Combinacion unica de terpenos. Efecto potente.'),
+('Lato Pop', 'hybrid', '22-26%', '0.1%', 56, 63, 'medium', '500g/m2', 'Gelato x Lollipop. Sabor dulce de caramelo. Efecto equilibrado euforico y relajante. Productiva.'),
+('Gelonade V2', 'sativa', '22-25%', '0.1%', 56, 63, 'medium', '500g/m2', 'Lemon Tree x Gelato 41. Sabor limonada con helado. Efecto sativa energizante. Terpenos citricos.'),
+('RS11', 'hybrid', '25-28%', '0.1%', 56, 63, 'medium', '450g/m2', 'Rainbow Sherbet x Pink Guava #11. Sabor frutal dulce complejo. THC alto. Genetica premium californiana.'),
+('Cadillac Rainbow', 'hybrid', '22-26%', '0.1%', 56, 63, 'medium', '450g/m2', 'Rainbow Belts x Cadillac. Sabor frutal con notas cremosas. Efecto relajante y euforico. Coloracion vivida.')
+ON CONFLICT (name) DO NOTHING;

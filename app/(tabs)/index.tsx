@@ -14,14 +14,38 @@ export default function HomeScreen() {
   const { plants, fetchPlants } = usePlantStore();
   const [totalCheckIns, setTotalCheckIns] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [lastWateringInfo, setLastWateringInfo] = useState<{ plantName: string; plantId: string; hoursAgo: number } | null>(null);
+
+  const fetchLastWatering = useCallback(async () => {
+    if (!user || activePlants.length === 0) return;
+    try {
+      const plantIds = activePlants.map(p => p.id);
+      const { data } = await supabase
+        .from('watering_logs')
+        .select('plant_id, date')
+        .in('plant_id', plantIds)
+        .order('date', { ascending: false })
+        .limit(1);
+      if (data && data.length > 0) {
+        const plant = activePlants.find(p => p.id === data[0].plant_id);
+        const hoursAgo = Math.floor((Date.now() - new Date(data[0].date).getTime()) / 3600000);
+        setLastWateringInfo({
+          plantName: plant?.name || 'Planta',
+          plantId: data[0].plant_id,
+          hoursAgo,
+        });
+      }
+    } catch { /* ignore */ }
+  }, [user, activePlants]);
 
   const onRefresh = useCallback(async () => {
     if (!user) return;
     setRefreshing(true);
     await fetchPlants(user.id);
     await fetchCheckInCount(user.id);
+    await fetchLastWatering();
     setRefreshing(false);
-  }, [user]);
+  }, [user, fetchLastWatering]);
 
   useEffect(() => {
     if (user) {
@@ -55,12 +79,13 @@ export default function HomeScreen() {
     }
   };
 
-  // Re-fetch check-in count when plants change
+  // Re-fetch counts when plants change
   useEffect(() => {
     if (user && plants.length > 0) {
       fetchCheckInCount(user.id);
+      fetchLastWatering();
     }
-  }, [plants]);
+  }, [plants, fetchLastWatering]);
 
   const activePlants = plants.filter((p) => p.is_active);
 
@@ -202,6 +227,38 @@ export default function HomeScreen() {
               </View>
             </View>
           </View>
+        )}
+
+        {/* Watering Status */}
+        {lastWateringInfo && (
+          <TouchableOpacity
+            onPress={() => router.push({ pathname: '/plant/watering', params: { plantId: lastWateringInfo.plantId } })}
+            activeOpacity={0.7}
+            style={{ paddingHorizontal: 16, marginBottom: 16 }}
+          >
+            <View style={{
+              backgroundColor: lastWateringInfo.hoursAgo > 48 ? '#3B1A1A' : '#1A2A4E',
+              borderRadius: 12,
+              padding: 14,
+              borderWidth: 1,
+              borderColor: lastWateringInfo.hoursAgo > 48 ? '#EF444440' : '#3B82F640',
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}>
+              <Text style={{ fontSize: 24, marginRight: 12 }}>
+                {lastWateringInfo.hoursAgo > 48 ? '🏜️' : '💧'}
+              </Text>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: lastWateringInfo.hoursAgo > 48 ? '#EF4444' : '#3B82F6', fontSize: 13, fontWeight: '700' }}>
+                  {lastWateringInfo.hoursAgo > 48 ? 'Tus plantas tienen sed!' : 'Ultimo riego'}
+                </Text>
+                <Text style={{ color: '#A0A0A0', fontSize: 12, marginTop: 2 }}>
+                  {lastWateringInfo.plantName} · hace {lastWateringInfo.hoursAgo < 1 ? 'menos de 1h' : lastWateringInfo.hoursAgo < 24 ? `${lastWateringInfo.hoursAgo}h` : `${Math.floor(lastWateringInfo.hoursAgo / 24)}d`}
+                </Text>
+              </View>
+              <Text style={{ color: '#A0A0A0', fontSize: 12 }}>Ver →</Text>
+            </View>
+          </TouchableOpacity>
         )}
 
         {/* Quick Actions */}

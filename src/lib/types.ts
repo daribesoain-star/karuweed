@@ -86,6 +86,27 @@ export interface Store {
   created_at: string;
 }
 
+export type WateringType = 'water' | 'feed' | 'foliar' | 'flush';
+
+export interface NutrientEntry {
+  name: string;
+  amount_ml: number;
+}
+
+export interface WateringLog {
+  id: string;
+  plant_id: string;
+  user_id: string;
+  date: string;
+  type: WateringType;
+  amount_ml?: number;
+  ph_level?: number;
+  ec_level?: number;
+  nutrients: NutrientEntry[];
+  notes?: string;
+  created_at: string;
+}
+
 export interface AuthState {
   user: User | null;
   session: string | null;

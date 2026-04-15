@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator, RefreshControl, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { usePlantStore } from '@/store/plantStore';
@@ -94,6 +94,49 @@ export default function PlantDetailScreen() {
     setRefreshing(false);
   }, [plant?.id]);
 
+  const handleShareJournal = async () => {
+    const stageLabel = stageLabels[plant.stage] || plant.stage;
+    let journal = `🌿 *${plant.name}* - Diario de cultivo KaruWeed\n`;
+    journal += `━━━━━━━━━━━━━━━━━━━━━\n`;
+    journal += `Variedad: ${plant.strain} (${plant.strain_type})\n`;
+    journal += `Fase: ${stageLabel}\n`;
+    journal += `Edad: ${daysOld} dias\n`;
+    if (plant.notes) journal += `Notas: ${plant.notes}\n`;
+    journal += `\n📊 *Resumen de ${checkIns.length} check-ins:*\n`;
+
+    const healthScores = checkIns.filter(c => c.ai_analysis?.health_score).map(c => c.ai_analysis!.health_score);
+    if (healthScores.length > 0) {
+      const avg = Math.round(healthScores.reduce((a, b) => a + b, 0) / healthScores.length);
+      journal += `Salud promedio: ${avg}%\n`;
+    }
+
+    const heights = checkIns.filter(c => c.height_cm != null).map(c => c.height_cm!);
+    if (heights.length > 0) {
+      journal += `Altura: ${Math.min(...heights)}cm → ${Math.max(...heights)}cm\n`;
+    }
+
+    // Last 3 check-ins summary
+    const recent = checkIns.slice(0, 3);
+    if (recent.length > 0) {
+      journal += `\n📝 *Ultimos check-ins:*\n`;
+      recent.forEach(c => {
+        const d = new Date(c.date);
+        const dateStr = `${d.getDate()}/${d.getMonth() + 1}`;
+        const score = c.ai_analysis?.health_score ? ` (${c.ai_analysis.health_score}%)` : '';
+        const height = c.height_cm != null ? ` ${c.height_cm}cm` : '';
+        journal += `• ${dateStr}${score}${height}`;
+        if (c.ai_analysis?.diagnosis) journal += ` - ${c.ai_analysis.diagnosis.substring(0, 60)}...`;
+        journal += '\n';
+      });
+    }
+
+    journal += `\n🌱 Generado con KaruWeed`;
+
+    try {
+      await Share.share({ message: journal, title: `${plant.name} - KaruWeed` });
+    } catch { /* user cancelled */ }
+  };
+
   const handleDelete = () => {
     Alert.alert(
       'Eliminar planta',
@@ -184,7 +227,12 @@ export default function PlantDetailScreen() {
               ← Atrás
             </Text>
           </TouchableOpacity>
-          <View style={{ flexDirection: 'row', gap: 16 }}>
+          <View style={{ flexDirection: 'row', gap: 14 }}>
+            <TouchableOpacity onPress={handleShareJournal}>
+              <Text style={{ color: '#3B82F6', fontSize: 16, fontWeight: '600' }}>
+                Compartir
+              </Text>
+            </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push({ pathname: '/plant/edit', params: { id: plant.id } })}>
               <Text style={{ color: '#C47A2C', fontSize: 16, fontWeight: '600' }}>
                 Editar
@@ -480,6 +528,23 @@ export default function PlantDetailScreen() {
             onPress={() => router.push(`/checkin/${plant.id}`)}
             size="large"
           />
+          <TouchableOpacity
+            onPress={() => router.push({ pathname: '/plant/watering', params: { plantId: plant.id } })}
+            style={{
+              backgroundColor: '#3B82F6',
+              borderRadius: 12,
+              paddingVertical: 14,
+              alignItems: 'center',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              gap: 8,
+              marginTop: 10,
+            }}
+            activeOpacity={0.8}
+          >
+            <Text style={{ fontSize: 16 }}>💧</Text>
+            <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}>Riego y nutrientes</Text>
+          </TouchableOpacity>
           <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
             <View style={{ flex: 1 }}>
               <Button
