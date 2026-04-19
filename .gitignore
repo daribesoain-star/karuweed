@@ -1,7 +1,25 @@
-# Environment variables
+# Environment variables (NEVER COMMIT)
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+*.env
+
+# Secrets / credentials
+*.pem
+*.cer
+*.der
+*.pfx
+service-account*.json
+google-services.json
+GoogleService-Info.plist
+firebase-adminsdk*.json
+secrets/
+credentials/
+.supabase/
+
+# Expo / EAS local state
+.eas/
+eas-cli*.log
 
 # Dependencies
 node_modules/

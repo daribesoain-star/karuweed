@@ -1,8 +1,12 @@
 import { AIAnalysis } from './types';
 import { supabase } from './supabase';
 
-const SUPABASE_URL = 'https://ymvnflwcxwgsyhramhex.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inltdm5mbHdjeHdnc3locmFtaGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMTgwMDcsImV4cCI6MjA5MDc5NDAwN30.o-4U-sTTDXxKHtU23RkgWX6ctizVRAo1GGX6RDzxKCM';
+const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  throw new Error('Missing Supabase env vars for AI client.');
+}
 
 export async function analyzePlantImage(
   base64Images: string | string[],

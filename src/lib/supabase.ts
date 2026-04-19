@@ -2,9 +2,14 @@ import { createClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
 import { AppState } from 'react-native';
 
-// Hardcoded: anon key is designed to be public (RLS protects data)
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://ymvnflwcxwgsyhramhex.supabase.co';
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inltdm5mbHdjeHdnc3locmFtaGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMTgwMDcsImV4cCI6MjA5MDc5NDAwN30.o-4U-sTTDXxKHtU23RkgWX6ctizVRAo1GGX6RDzxKCM';
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    'Missing Supabase env vars. Copy .env.example to .env and set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY.'
+  );
+}
 
 class SecureStoreAdapter {
   async getItem(key: string): Promise<string | null> {
